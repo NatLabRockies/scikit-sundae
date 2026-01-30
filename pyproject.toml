@@ -15,11 +15,11 @@ description = "Python bindings to SUNDIALS differential algebraic equation solve
 keywords = ["sundials", "dae", "ode", "integrator", "ivp", "cvode", "ida"]
 authors = [
     { name = "Corey R. Randall" },
-    { email = "corey.randall@nrel.gov" },
+    { email = "corey.r.randall@gmail.com" },
 ]
 maintainers = [
     { name = "Corey R. Randall" },
-    { email = "corey.randall@nrel.gov" },
+    { email = "corey.r.randall@gmail.com" },
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
