@@ -59,7 +59,6 @@ tests = [
     "pytest-cov",
     "pytest-html",
     "pytest-xdist",
-    "pytest-slow-last",
 ]
 dev = [
     "nox",
