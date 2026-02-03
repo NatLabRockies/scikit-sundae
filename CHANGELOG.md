@@ -1,5 +1,10 @@
 # scikit-SUNDAE Changelog
 
+## [v1.1.1](https://github.com/NREL/scikit-sundae/tree/v1.1.1)
+
+### Bug Fixes
+- Ensures exception propagations work correctly with numpy 2.4 releases ([#43](https://github.com/NREL/scikit-sundae/pull/43))
+
 ## [v1.1.0](https://github.com/NREL/scikit-sundae/tree/v1.1.0)
 
 ### New Features
