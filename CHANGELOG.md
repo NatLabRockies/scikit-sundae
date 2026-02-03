@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/NatLabRockies/scikit-sundae)
 
 ### New Features
+- Move to newest SUNDIALS v7.6 for CI builds/tests ([#44](https://github.com/NatLabRockies/scikit-sundae/pull/44))
 - Custom `__reduce__` methods, allowing solvers to be serialized ([#38](https://github.com/NatLabRockies/scikit-sundae/pull/38))
 
 ### Optimizations
