@@ -6,7 +6,7 @@
     },
     {
         "name": "stable",
-        "version": "1.1.0",
+        "version": "1.1.1",
         "url": "https://scikit-sundae.readthedocs.io/en/stable/",
         "preferred": true
     },
