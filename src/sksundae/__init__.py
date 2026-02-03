@@ -62,4 +62,4 @@ from . import jacband
 
 __all__ = ['ida', 'utils', 'cvode', 'jacband', 'SUNDIALS_VERSION']
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'

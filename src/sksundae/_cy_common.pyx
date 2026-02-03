@@ -39,7 +39,7 @@ elif SUNDIALS_INT_TYPE == "long int":
 
 cdef svec2np(N_Vector nvec, np.ndarray[DTYPE_t, ndim=1] np_array):
     """Fill a numpy array with values from an N_Vector."""
-    cdef sunrealtype* nvec_ptr
+    cdef sunrealtype* nv_ptr
 
     nv_ptr = N_VGetArrayPointer(nvec)
     ptr2np(nv_ptr, np_array)

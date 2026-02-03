@@ -17,7 +17,13 @@ cimport numpy as np
 
 from scipy import sparse as sp
 from scipy.optimize._numdiff import group_columns
-from cpython.exc cimport PyErr_CheckSignals, PyErr_Occurred
+from cpython.exc cimport (
+    PyErr_Fetch, PyErr_NormalizeException,
+    PyObject, PyErr_CheckSignals, PyErr_Occurred,  # PyErr_GetRaisedException,
+)
+
+# PyErr_Fetch and PyErr_NormalizeException are deprecated at 3.12. When support
+# for <3.12 is dropped, replace with PyErr_GetRaisedException.
 
 # Extern cdef headers
 from .c_cvode cimport *
@@ -235,8 +241,18 @@ cdef void _err_handler(int line, const char* func, const char* file,
                        const char* msg, int err_code, void* err_user_data,
                        SUNContext ctx) except *:
     """Custom error handler for shorter messages (no line or file)."""
-    
-    if not PyErr_Occurred():
+    cdef PyObject *errtype, *errvalue, *errtraceback
+
+    if PyErr_Occurred():
+        aux = <AuxData> err_user_data
+        # aux.pyerr = <object> PyErr_GetRaisedException()
+
+        PyErr_Fetch(&errtype, &errvalue, &errtraceback)
+        PyErr_NormalizeException(&errtype, &errvalue, &errtraceback)
+
+        aux.pyerr = <object> errvalue
+
+    else:
         decoded_func = func.decode("utf-8")
         decoded_msg = msg.decode("utf-8").replace(", ,", ",").strip()
         print(f"\n[{decoded_func}, Error: {err_code}] {decoded_msg}\n")
@@ -262,6 +278,7 @@ cdef class AuxData:
     cdef bint with_userdata
     cdef bint is_constrained
 
+    cdef object pyerr           # Exception
     cdef object rhsfn           # Callable
     cdef object userdata        # Any
     cdef object eventsfn        # Callable
@@ -272,6 +289,7 @@ cdef class AuxData:
     cdef object jactimes        # CVODEJacTimes
 
     def __cinit__(self, sunindextype NEQ, object options):
+        self.pyerr = None
         self.np_yy = np.empty(NEQ, DTYPE)
         self.np_yp = np.empty(NEQ, DTYPE)
         
@@ -740,7 +758,7 @@ cdef class CVODE:
 
         # 16) Set optional inputs
         SUNContext_ClearErrHandlers(self.ctx)
-        SUNContext_PushErrHandler(self.ctx, _err_handler, NULL)
+        SUNContext_PushErrHandler(self.ctx, _err_handler, <void*> self.aux)
 
         cdef sunrealtype first_step = <sunrealtype> self._options["first_step"] 
         flag = CVodeSetInitStep(self.mem, first_step)
@@ -921,10 +939,12 @@ cdef class CVODE:
 
                 ind += 1
 
-            if stop:
-                break
+            if self.aux.pyerr is not None:
+                raise self.aux.pyerr
             elif PyErr_CheckSignals() == -1:
                 return
+            elif stop:
+                break
 
         if self.aux.eventsfn:
             i_ev, t_ev, y_ev = _collect_events(self.aux)
@@ -1004,10 +1024,12 @@ cdef class CVODE:
 
                 ind += 1
 
-            if stop:
-                break
+            if self.aux.pyerr is not None:
+                raise self.aux.pyerr
             elif PyErr_CheckSignals() == -1:
                 return
+            elif stop:
+                break
 
         if self.aux.eventsfn:
             i_ev, t_ev, y_ev = _collect_events(self.aux)
