@@ -11,8 +11,8 @@ import numpy as np
 from Cython.Build import cythonize
 from packaging.version import Version
 
-MIN_VERSION = Version('7.3.0')
-MAX_VERSION = Version('7.6.0')
+MIN_VERSION = Version('7.6.0')
+MAX_VERSION = Version('7.7.0')
 
 
 def find_sundials():
