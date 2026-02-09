@@ -3,19 +3,11 @@
 
  # scikit-SUNDAE
 
-[![CI][ci-b]][ci-l] &nbsp;
-![tests][test-b] &nbsp;
-![coverage][cov-b] &nbsp;
-[![pep8][pep-b]][pep-l]
-
-[ci-b]: https://github.com/NatLabRockies/scikit-sundae/actions/workflows/ci.yml/badge.svg
-[ci-l]: https://github.com/NatLabRockies/scikit-sundae/actions/workflows/ci.yml
-
-[test-b]: https://github.com/NatLabRockies/scikit-sundae/blob/main/images/tests.svg?raw=true
-[cov-b]: https://github.com/NatLabRockies/scikit-sundae/blob/main/images/coverage.svg?raw=true
-
-[pep-b]: https://img.shields.io/badge/code%20style-pep8-orange.svg
-[pep-l]: https://www.python.org/dev/peps/pep-0008
+[![ci](https://github.com/NatLabRockies/scikit-sundae/actions/workflows/ci.yml/badge.svg)](https://github.com/NatLabRockies/scikit-sundae/actions/workflows/ci.yml) &nbsp;
+![coverage](https://github.com/NatLabRockies/scikit-sundae/blob/main/images/coverage.svg?raw=true) &nbsp;
+[![license](https://img.shields.io/badge/license-BSD--3-blue.svg)](https://github.com/NatLabRockies/scikit-sundae/blob/main/LICENSE) &nbsp;
+[![downloads](https://static.pepy.tech/personalized-badge/scikit-sundae?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/scikit-sundae) &nbsp;
+[![pypi](https://img.shields.io/pypi/v/scikit-sundae)](https://pypi.org/project/scikit-sundae)
 
 ## Summary
 scikit-SUNDAE provides Python bindings to [SUNDIALS](https://sundials.readthedocs.io/) integrators. The implicit differential algebraic (IDA) solver and C-based variable-coefficient ordinary differential equations (CVODE) solver are both included.
