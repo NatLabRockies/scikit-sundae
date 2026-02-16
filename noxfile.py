@@ -104,6 +104,8 @@ def run_pytest(session: nox.Session) -> None:
             'tests/',
         ]
     else:
+        os.makedirs('reports', exist_ok=True)
+
         command = [
             'pytest',
             '--cov=sksundae',
