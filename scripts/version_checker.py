@@ -28,7 +28,6 @@ def get_latest_version(package: str, prefix: str = None) -> str:
         Failed to fetch PyPI data for requested package.
 
     """
-
     url = f"https://pypi.org/pypi/{package}/json"
 
     response = requests.get(url)
@@ -73,7 +72,6 @@ def check_against_pypi(pypi: str, local: str) -> None:
         Local package is older than PyPI.
 
     """
-
     pypi = Version(pypi)
     local = Version(local)
 
@@ -104,7 +102,6 @@ def check_against_tag(tag: str, local: str) -> None:
         Version mismatch: tag differs from local.
 
     """
-
     tag = Version(tag)
     local = Version(local)
 

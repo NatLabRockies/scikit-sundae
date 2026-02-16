@@ -15,7 +15,7 @@ class IDA:
 
     def __init__(self, resfn: Callable, **options) -> None:
         """
-        This class wraps the implicit differential algebraic (IDA) solver from
+        A class to wrap the implicit differential algebraic (IDA) solver from
         SUNDIALS [1]_ [2]_. IDA solves both ordinary differential equations
         (ODEs) and differiential agebraic equations (DAEs).
 
@@ -144,7 +144,7 @@ class IDA:
 
         Notes
         -----
-        Return values from all user-defined function (e.g., 'resfn', 'eventsfn',
+        Return values from user-defined functions (e.g., 'resfn', 'eventsfn',
         and 'jacfn') are ignored by the solver. Instead the solver directly
         reads from pre-allocated memory. Output arrays (e.g., 'res', 'events',
         and 'JJ') from each user-defined callable should be filled within each
@@ -363,10 +363,14 @@ class IDAResult(_IDAResult):
     def __init__(self, **kwargs) -> None:
         """
         Inherits from :class:`~sksundae.common.RichResult`. The solution class
-        groups output from :class:`IDA` into an object with the fields:
+        groups output from :class:`IDA` into an object. Descriptions of the
+        fields are given below.
 
         Parameters
         ----------
+        **kwargs : dict
+            Keyword arguments for the result fields. The full list of fields is
+            given below.
         message : str
             Human-readable description of the status value.
         success : bool
@@ -413,7 +417,7 @@ class IDAResult(_IDAResult):
         Notes
         -----
         Terminal events are appended to the end of 't', 'y', and 'yp'. However,
-        if an event was not terminal then it will only appear in '\\*_events'
+        if an event was not terminal then it will only appear in `*_events`
         outputs and not within the main output arrays.
 
         'nfev' and 'njev' are cumulative for stepwise solution approaches. The
