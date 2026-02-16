@@ -15,7 +15,7 @@ class CVODE:
 
     def __init__(self, rhsfn: Callable, **options) -> None:
         """
-        This class wraps the C-based variable-coefficient ordinary differential
+        A class to wrap the C-based variable-coefficient ordinary differential
         equations (CVODE) solver from SUNDIALS [1]_ [2]_.
 
         Parameters
@@ -138,7 +138,7 @@ class CVODE:
 
         Notes
         -----
-        Return values from all user-defined function (e.g., 'rhsfn', 'eventsfn',
+        Return values from user-defined functions (e.g., 'rhsfn', 'eventsfn',
         and 'jacfn') are ignored by the solver. Instead the solver directly
         reads from pre-allocated memory. Output arrays (e.g., 'yp', 'events',
         and 'JJ') from each user-defined callable should be filled within each
@@ -338,10 +338,14 @@ class CVODEResult(_CVODEResult):
     def __init__(self, **kwargs) -> None:
         """
         Inherits from :class:`~sksundae.common.RichResult`. The solution class
-        groups output from :class:`CVODE` into an object with the fields:
+        groups output from :class:`CVODE` into an object. Descriptions of the
+        fields are given below.
 
         Parameters
         ----------
+        **kwargs : dict
+            Keyword arguments for the result fields. The full list of fields is
+            given below.
         message : str
             Human-readable description of the status value.
         success : bool
@@ -382,7 +386,7 @@ class CVODEResult(_CVODEResult):
         Notes
         -----
         Terminal events are appended to the end of 't' and 'y'. However, if an
-        event was not terminal then it will only appear in '\\*_events' outputs
+        event was not terminal then it will only appear in `*_events` outputs
         and not within the main output arrays.
 
         'nfev' and 'njev' are cumulative for stepwise solution approaches. The

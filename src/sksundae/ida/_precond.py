@@ -63,7 +63,6 @@ class IDAPrecond:
             ida/Usage/index.html#preconditioner-setup-iterative-linear-solvers
 
         """
-
         if setupfn is None:
             pass
         elif not isinstance(setupfn, Callable):

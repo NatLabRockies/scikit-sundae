@@ -1,7 +1,4 @@
-"""
-General-purpose module for shared utilities across the package.
-
-"""
+"""General-purpose module for shared utilities across the package."""
 
 import numpy as np
 
@@ -16,7 +13,7 @@ class RichResult:
 
     def __init__(self, **kwargs):
         """
-        This class is a based off the `_RichResult` class in the `scipy`
+        A container class based off the `_RichResult` class in the `scipy`
         library. It combines a series of formatting functions to make the
         printed 'repr' easy to read. Use this class directly by passing in
         any number of keyword arguments, or use it as a base class to have
@@ -105,14 +102,12 @@ class RichResult:
 
 def _indenter(s, n=0):
     """Ensures lines after the first are indented by the specified amount."""
-
     split = s.split('\n')
     return ('\n' + ' '*n).join(split)
 
 
 def _format_float_10(x):
     """Returns string representation of floats with exactly ten characters."""
-
     if np.isposinf(x):
         return '       inf'
     elif np.isneginf(x):
@@ -124,7 +119,6 @@ def _format_float_10(x):
 
 def _format_dict(d, n=0, mplus=1, sorter=None):
     """Pretty printer for dictionaries."""
-
     if isinstance(d, dict):
         m = max(map(len, list(d.keys()))) + mplus  # width to print keys
 
