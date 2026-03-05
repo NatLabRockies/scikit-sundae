@@ -301,13 +301,24 @@ cdef class AuxData:
         self.np_ee = np.empty(options["num_events"], DTYPE)
 
         self.jacfn = options["jacfn"]
-        if self.jacfn is not None:
+        self.linsolver = options["linsolver"]
+        self.sparsity = options["sparsity"]
+
+        # The jacfn memory is allocated as a 1D or 2D array based on options. A
+        # sparse linear solver always allocates a 1D array with the same number
+        # of nonzeros as the sparsity pattern. It is left to the user to fill in
+        # the indices as they correspond to the sparsity pattern (CSC format).
+        # In cases where the linear solver is not sparse, a 2D array allocation
+        # is used when SUNDIALS does not internally handle the jacobian (i.e.,
+        # when users want to apply the custom sparse FD routines, or provide a
+        # user-defined jacfn). In cases where SUNDIALS internally handles the
+        # jacobian with its own FD methods, no memory needs to be allocated.
+        if self.linsolver == "sparse":
+            self.np_JJ = np.zeros(self.sparsity.nnz, DTYPE)
+        elif self.sparsity is not None or self.jacfn is not None:
             self.np_JJ = np.zeros((NEQ, NEQ), DTYPE)
         else:
             self.np_JJ = np.empty(0, DTYPE)
-
-        self.linsolver = options["linsolver"]
-        self.sparsity = options["sparsity"]
 
         self.precond = options["precond"]
         if self.precond is not None:
@@ -437,18 +448,12 @@ cdef class _cvLSSparseDQJac:
 
     cdef _setup_memory(self, void* mem, sunindextype NEQ):
         """
-        Store mem for access to current step, and prep either 1D or 2D array
-        for Jacobian storage. 
+        Store mem for access to current step size. Cannot be a part of cinit
+        because void* types cannot be passed in from Python.
         
         """
         self.mem = mem
         self.aux.jacfn = self
-
-        if self.aux.linsolver == "sparse":
-            nnz = self.sparsity.nnz
-            self.aux.np_JJ = np.zeros(nnz, DTYPE)
-        else:
-            self.aux.np_JJ = np.zeros((NEQ, NEQ), DTYPE)
 
 
 class CVODEResult(RichResult):
@@ -687,24 +692,18 @@ cdef class CVODE:
             raise RuntimeError("CVodeSetLinearSolver - " + LSMESSAGES[flag])
 
         # 11) Set linear solver optional inputs
-        sparsity = self._options["sparsity"]
-        if sparsity is not None:
-            spjac = _cvLSSparseDQJac(self.aux, sparsity)
+        if self.aux.jacfn is None and self.aux.sparsity is not None:
+            spjac = _cvLSSparseDQJac(self.aux, self.aux.sparsity)
             spjac._setup_memory(self.mem, self.NEQ)
-            
-            if self._options["jacfn"] is None:
-                self._options["jacfn"] = spjac 
 
-        jacfn = self._options["jacfn"]
-        if jacfn:
+        if self.aux.jacfn:
             flag = CVodeSetJacFn(self.mem, _jacfn_wrapper)
             if flag < 0:
                 raise RuntimeError("CVodeSetJacFn - " + LSMESSAGES[flag])
 
-        precond = self._options["precond"]
-        if precond is None:
+        if self.aux.precond is None:
             pass
-        elif precond.setupfn is None:
+        elif self.aux.precond.setupfn is None:
             flag = CVodeSetPreconditioner(self.mem, NULL, _psolve_wrapper)
             if flag < 0:
                 raise RuntimeError("CVodeSetPrecond - " + LSMESSAGES[flag])
@@ -714,10 +713,9 @@ cdef class CVODE:
             if flag < 0:
                 raise RuntimeError("CVodeSetPrecond - " + LSMESSAGES[flag])
 
-        jactimes = self._options["jactimes"]
-        if jactimes is None:
+        if self.aux.jactimes is None:
             pass
-        elif jactimes.setupfn is None:
+        elif self.aux.jactimes.setupfn is None:
             flag = CVodeSetJacTimes(self.mem, NULL, _jvsolve_wrapper)
             if flag < 0:
                 raise RuntimeError("CVodeSetJacTimes - " + LSMESSAGES[flag])
@@ -743,14 +741,13 @@ cdef class CVODE:
             raise RuntimeError("CVodeSetMaxConvFails - " + CVMESSAGES[flag])
 
         # 15) Specify rootfinding problem
-        eventsfn = self._options["eventsfn"]
         num_events = self._options["num_events"]
-        if eventsfn:
+        if self.aux.eventsfn:
             flag = CVodeRootInit(self.mem, <int> num_events, _eventsfn_wrapper)
             if flag < 0:
                 raise RuntimeError("CVodeRootInit - " + CVMESSAGES[flag])
 
-            np_eventsdir = np.array(eventsfn.direction, INT_TYPE)
+            np_eventsdir = np.array(self.aux.eventsfn.direction, INT_TYPE)
 
             flag = CVodeSetRootDirection(self.mem, <int*> np_eventsdir.data)
             if flag < 0:
