@@ -21,7 +21,7 @@ class CVODEJacTimes:
             A function to setup data before solving the Jacobian-vector product.
             Use None if not needed. The required signature is in the notes.
         solvefn : Callable
-            A function that solves for the Jacobian-vector product ``J*v`` (or
+            A function that solves for the Jacobian-vector product `J*v` (or
             an approximation to it). The required signature is in the notes.
 
         Raises
@@ -34,18 +34,18 @@ class CVODEJacTimes:
         Notes
         -----
         The solve and setup functions require specific function signatures. For
-        'solvefn' use ``f(t, y, yp, v, Jv[, userdata])``. Any return values are
+        'solvefn' use `f(t, y, yp, v, Jv[, userdata])`. Any return values are
         ignored. Instead, the function should fill the pre-allocated memory for
-        'Jv' (a 1D array) with the solution (or approximation) to ``J*v``. Use
-        ``[:]`` to fill the array rather than overwriting it. For example,
-        ``Jv[:] = f(...)`` is correct whereas ``Jv = f(...)`` is not. The user
+        'Jv' (a 1D array) with the solution (or approximation) to `J*v`. Use
+        `[:]` to fill the array rather than overwriting it. For example,
+        `Jv[:] = f(...)` is correct whereas `Jv = f(...)` is not. The user
         is responsible for managing their own Jacobian data if needed. 'setupfn'
         can be used to help setup any needed values/data so that 'solvefn' is
         not overly complex.
 
-        'setupfn' requires the signature ``f(t, y, yp[, userdata])``. As with
+        'setupfn' requires the signature `f(t, y, yp[, userdata])`. As with
         'solvefn', any return values are ignored. However, you can use the
-        function to define global variables or add them to ``userdata`` so they
+        function to define global variables or add them to `userdata` so they
         can be passed to 'solvefn'. The order of function calls is always
         'rhsfn' -> 'setupfn' -> 'solvefn' for each integration step.
 

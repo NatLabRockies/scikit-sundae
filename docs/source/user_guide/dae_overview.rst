@@ -34,7 +34,7 @@ The index of a DAE refers to the number of times an algebraic equation must be d
 * **Index-1 DAEs:** These are the simplest type of DAEs, where the algebraic constraints are directly compatible with the differential equations. In other words, the system can be solved without needing to differentiate the algebraic constraints.
 * **Higher-index DAEs:** These require one or more differentiations of the algebraic constraints to be reduced to an ODE-like system. Higher-index DAEs are typically more challenging to solve numerically and may require specific reformulations.
 
-The ``IDA`` solver in scikit-SUNDAE is designed to handle index-1 DAEs. Users working with higher-index DAEs often need to reformulate their systems to reduce them to index-1. One common method is to differentiate the algebraic equations until they become compatible with the differential system.
+The `IDA` solver in scikit-SUNDAE is designed to handle index-1 DAEs. Users working with higher-index DAEs often need to reformulate their systems to reduce them to index-1. One common method is to differentiate the algebraic equations until they become compatible with the differential system.
 
 Intro to IDA
 ------------
@@ -42,12 +42,12 @@ The IDA solver, part of the SUNDIALS suite, is specifically designed to handle i
 
 Setting up DAEs for IDA
 ^^^^^^^^^^^^^^^^^^^^^^^
-When using the ``IDA`` solver in scikit-SUNDAE, users must define which variables are differential and which are algebraic. The solver requires the user to provide:
+When using the `IDA` solver in scikit-SUNDAE, users must define which variables are differential and which are algebraic. The solver requires the user to provide:
 
 * The system of governing equations, written as residuals, like :math:`F(t, y, y') = 0`
 * Initial conditions for all variables (differential and algebraic) and their derivatives
 
-In regards to the initial conditions, ``IDA`` offers an initial correction scheme to help refine their values before solving the system. For instance, it is common to know either :math:`y_0` or :math:`y'_0` but not necessarily both. In such cases, users can rely on the solver to determine whichever is missing, ensuring the system is correctly initialized for the numerical solution. For more information see the ``calc_initcond`` setting in the API reference.
+In regards to the initial conditions, `IDA` offers an initial correction scheme to help refine their values before solving the system. For instance, it is common to know either :math:`y_0` or :math:`y'_0` but not necessarily both. In such cases, users can rely on the solver to determine whichever is missing, ensuring the system is correctly initialized for the numerical solution. For more information see the `calc_initcond` setting in the API reference.
 
 Numerical Methods 
 ^^^^^^^^^^^^^^^^^
@@ -61,4 +61,4 @@ These methods allow IDA to handle DAEs that cannot be solved with traditional OD
 
 Summary
 -------
-DAEs are an extension of ODEs that include algebraic equations in addition to differential equations. While they are more complex to solve, the ``IDA`` solver in scikit-SUNDAE provides a powerful tool for solving index-1 DAEs using implicit methods and Newton-based iterations. Properly defining the differential and algebraic variables and understanding the system's index is essential for setting up and solving a DAE problem efficiently.
+DAEs are an extension of ODEs that include algebraic equations in addition to differential equations. While they are more complex to solve, the `IDA` solver in scikit-SUNDAE provides a powerful tool for solving index-1 DAEs using implicit methods and Newton-based iterations. Properly defining the differential and algebraic variables and understanding the system's index is essential for setting up and solving a DAE problem efficiently.

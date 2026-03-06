@@ -22,7 +22,7 @@ class IDAPrecond:
             A function to setup data before solving the preconditioned problem.
             Use None if not needed. The required signature is in the notes.
         solvefn : Callable
-            A function that solves the preconditioned problem ``P*zvec = rvec``.
+            A function that solves the preconditioned problem `P*zvec = rvec`.
             P is a preconditioner matrix approximating the Jacobian, at least
             crudely. The required signature is in the notes.
 
@@ -36,26 +36,26 @@ class IDAPrecond:
         Notes
         -----
         The solve and setup functions require specific function signatures. For
-        'solvefn' use ``f(t, y, yp, res, rvec, zvec, cj, delta[, userdata])``.
+        'solvefn' use `f(t, y, yp, res, rvec, zvec, cj, delta[, userdata])`.
         Any return values are ignored. Instead, the function should fill the
         pre-allocated memory for 'zvec' with the solution to the preconditioned
-        problem ``P*zvec = rvec``. Don't forget to use ``[:]`` to fill the array
-        rather than overwriting it. For example, ``zvec[:] = f(...)`` is correct
-        whereas ``zvec = f(...)`` is not.
+        problem `P*zvec = rvec`. Don't forget to use `[:]` to fill the array
+        rather than overwriting it. For example, `zvec[:] = f(...)` is correct
+        whereas `zvec = f(...)` is not.
 
         Defining a preconditioning matrix is non-trivial and left to the user.
         For IDA, P should at least crudely approximate the Jacobian given by
-        ``J = dF_i/dy_j + cj*dF_i/dyp_j`` where ``res = F(t, y, yp)`` is the
+        `J = dF_i/dy_j + cj*dF_i/dyp_j` where `res = F(t, y, yp)` is the
         residual function that describes the system of DAEs. If you need extra
-        parameters or values, they can be passed via the optional ``userdata``
+        parameters or values, they can be passed via the optional `userdata`
         argument. For convenience, you can also define the optional 'setupfn'
         to setup any values (e.g., P) before the solve step.
 
         The 'setupfn' is an optional function that you can use to perform any
         operations needed before solving. The required signature for 'setupfn'
-        is ``f(t, y, yp, res, cj[, userdata])``. Any return values are ignored.
+        is `f(t, y, yp, res, cj[, userdata])`. Any return values are ignored.
         However, you can use the function to define either global variables or
-        add them to ``userdata`` so they can be passed to 'solvefn'. Please
+        add them to `userdata` so they can be passed to 'solvefn'. Please
         refer to the `SUNDIALS documentation`_ for more information about these
         functions and their input arguments.
 

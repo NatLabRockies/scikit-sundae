@@ -13,7 +13,7 @@ DAEs with no algebraic constraints).
 
 Accessing the documentation
 ---------------------------
-Documentation is accessible via Python's ``help()`` function which prints
+Documentation is accessible via Python's `help()` function which prints
 docstrings from a package, module, function, class, etc. You can also access
 the documentation by visiting the website, hosted on Read the Docs. The website
 includes search functionality and more detailed examples.

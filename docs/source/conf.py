@@ -48,6 +48,7 @@ source_suffix = {
     '.myst': 'myst-nb',
 }
 
+default_role = 'literal'
 highlight_language = 'console'
 
 
