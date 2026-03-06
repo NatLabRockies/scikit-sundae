@@ -33,7 +33,7 @@ If you forget to run tests locally they will still be run as part of the continu
 
 Failing Tests
 ^^^^^^^^^^^^^
-It is possible that although your local tests work that one of the older versions of Python, or even the newest version of Python on a different machine, may fail. In these cases, you should check the GitHub actions logs and address the issue. Ask for help from other developers using the `Discussions <https://github.com/NREL/scikit-sundae/discussions>`_ page if you ever feel stuck.
+It is possible that although your local tests work that one of the older versions of Python, or even the newest version of Python on a different machine, may fail. In these cases, you should check the GitHub actions logs and address the issue. Ask for help from other developers using the `Discussions <https://github.com/NatLabRockies/scikit-sundae/discussions>`_ page if you ever feel stuck.
 
 A good place to start if your tests are only failing on older Python versions is to setup a second, temporary, development environment with one of the older Python versions. All ``nox`` commands will still function the same way. This can help you run the failing tests locally instead of continuously pushing to GitHub. After failed tests are resolved, make sure you move back to using your primary development environment for future work.
 

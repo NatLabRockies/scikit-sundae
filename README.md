@@ -1,5 +1,5 @@
 <!-- <img alt='Logo' style='width: 75%; min-width: 250px; max-width: 500px;'
- src='https://github.com/NREL/scikit-sundae/blob/main/images/readme_logo.png?raw=true'/> -->
+ src='https://github.com/NatLabRockies/scikit-sundae/blob/main/images/readme_logo.png?raw=true'/> -->
 
  # scikit-SUNDAE
 
@@ -8,11 +8,11 @@
 ![coverage][cov-b] &nbsp;
 [![pep8][pep-b]][pep-l]
 
-[ci-b]: https://github.com/NREL/scikit-sundae/actions/workflows/ci.yml/badge.svg
-[ci-l]: https://github.com/NREL/scikit-sundae/actions/workflows/ci.yml
+[ci-b]: https://github.com/NatLabRockies/scikit-sundae/actions/workflows/ci.yml/badge.svg
+[ci-l]: https://github.com/NatLabRockies/scikit-sundae/actions/workflows/ci.yml
 
-[test-b]: https://github.com/NREL/scikit-sundae/blob/main/images/tests.svg?raw=true
-[cov-b]: https://github.com/NREL/scikit-sundae/blob/main/images/coverage.svg?raw=true
+[test-b]: https://github.com/NatLabRockies/scikit-sundae/blob/main/images/tests.svg?raw=true
+[cov-b]: https://github.com/NatLabRockies/scikit-sundae/blob/main/images/coverage.svg?raw=true
 
 [pep-b]: https://img.shields.io/badge/code%20style-pep8-orange.svg
 [pep-l]: https://www.python.org/dev/peps/pep-0008
@@ -35,7 +35,7 @@ If you prefer using the `conda` package manager, you can install scikit-SUNDAE f
 conda install -c conda-forge scikit-sundae
 ```
 
-Both sources contain binary installations. If your combination of operating system and CPU architecture is not supported, please submit an [issue](https://github.com/NREL/scikit-sundae/issues/) to let us know. If you'd prefer to build from source, please see the [documentation](https://scikit-sundae.readthedocs.io/en/latest/user_guide/installation.html).
+Both sources contain binary installations. If your combination of operating system and CPU architecture is not supported, please submit an [issue](https://github.com/NatLabRockies/scikit-sundae/issues/) to let us know. If you'd prefer to build from source, please see the [documentation](https://scikit-sundae.readthedocs.io/en/latest/user_guide/installation.html).
 
 ## Get Started
 You are now ready to start solving. Run one of the following examples to check your installation. Afterward, check out the [documentation](https://scikit-sundae.readthedocs.io/) for a full list of options (including event functions), detailed examples, and more.
@@ -85,9 +85,9 @@ plt.show()
 * Check the [solve_ivp](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) documentation from scipy or the [scipy-dae](https://pypi.org/project/scipy-dae/) package repository if you are looking for common examples to test out and compare against. Translating an example from another package can help you learn how to use scikit-SUNDAE before trying to solve more challenging problems.
 
 ## Citing this Work
-This work was authored by researchers at the National Renewable Energy Laboratory (NREL). If you use use this package in your work, please include the following citation:
+This work was authored by researchers at the National Laboratory of the Rockies (NLR). If you use use this package in your work, please include the following citation:
 
-> Randall, Corey R. "scikit-SUNDAE: Python bindings to SUNDIALS Differential Algebraic Equation solvers [SWR-24-137]." Computer software, Oct. 2024. url: https://github.com/NREL/scikit-sundae. doi: https://doi.org/10.11578/dc.20241104.3.
+> Randall, Corey R. "scikit-SUNDAE: Python bindings to SUNDIALS Differential Algebraic Equation solvers [SWR-24-137]." Computer software, Oct. 2024. url: https://github.com/NatLabRockies/scikit-sundae. doi: https://doi.org/10.11578/dc.20241104.3.
 
 For convenience, we also provide the following for your BibTex:
 
@@ -96,7 +96,7 @@ For convenience, we also provide the following for your BibTex:
   title = {{scikit-SUNDAE: Python bindings to SUNDIALS Differential Algebraic Equation solvers [SWR-24-137]}},
   author = {Randall, Corey R.},
   doi = {10.11578/dc.20241104.3},
-  url = {https://github.com/NREL/scikit-sundae},
+  url = {https://github.com/NatLabRockies/scikit-sundae},
   month = {Oct.},
   year = {2024},
 }
@@ -113,7 +113,7 @@ scikit-SUNDAE was originally inspired by [scikits-odes](https://scikits-odes.rea
 Our binary distributions include pre-compiled dynamic SUNDIALS libraries that also reference libraries like SuperLU_MT, OpenBLAS, and LAPACK. These are self-contained and will not affect other, existing installations you may already have. To be in compliance with each library's distribution requirements, all scikit-SUNDAE distributions include a summary of all licenses (see the `LICENSES_bundled` file). Note that we only link against and distribute packages with a BSD-3 license. Some solvers and options, like KLU, have LGPL licenses and are therefore not compatible to implement nor distribute.
 
 ## Contributing
-If you'd like to contribute to this package, please look through the existing [issues](https://github.com/NREL/scikit-sundae/issues). If the bug you've caught or the feature you'd like to add isn't already reported, please submit a new issue. You should also read through the [developer guidelines](https://scikit-sundae.readthedocs.io/en/latest/development/) if you plan to work on the issue yourself.
+If you'd like to contribute to this package, please look through the existing [issues](https://github.com/NatLabRockies/scikit-sundae/issues). If the bug you've caught or the feature you'd like to add isn't already reported, please submit a new issue. You should also read through the [developer guidelines](https://scikit-sundae.readthedocs.io/en/latest/development/) if you plan to work on the issue yourself.
 
 ## Disclaimer
-This work was authored by the National Renewable Energy Laboratory (NREL), operated by Alliance for Sustainable Energy, LLC, for the U.S. Department of Energy (DOE). The views expressed in the repository do not necessarily represent the views of the DOE or the U.S. Government.
+This work was authored by the National Laboratory of the Rockies (NLR), operated by Alliance for Energy Innovation, LLC, for the U.S. Department of Energy (DOE). The views expressed in the repository do not necessarily represent the views of the DOE or the U.S. Government.

@@ -1,47 +1,47 @@
 # scikit-SUNDAE Changelog
 
-## [v1.1.1](https://github.com/NREL/scikit-sundae/tree/v1.1.1)
+## [v1.1.1](https://github.com/NatLabRockies/scikit-sundae/tree/v1.1.1)
 
 ### Bug Fixes
-- Ensures exception propagations work correctly with numpy 2.4 releases ([#43](https://github.com/NREL/scikit-sundae/pull/43))
+- Ensures exception propagations work correctly with numpy 2.4 releases ([#43](https://github.com/NatLabRockies/scikit-sundae/pull/43))
 
-## [v1.1.0](https://github.com/NREL/scikit-sundae/tree/v1.1.0)
+## [v1.1.0](https://github.com/NatLabRockies/scikit-sundae/tree/v1.1.0)
 
 ### New Features
-- Enforce constraints when `**LSSparseDQJac` funcs are used ([#32](https://github.com/NREL/scikit-sundae/pull/32))
-- Drop Python 3.9 and add support for 3.14 in tests/release ([#31](https://github.com/NREL/scikit-sundae/pull/31))
-- Move to newest SUNDIALS v7.5 for CI builds/tests ([#30](https://github.com/NREL/scikit-sundae/pull/30))
-- Add version warning banner to docs for dev and older releases ([#28](https://github.com/NREL/scikit-sundae/pull/28]))
-- Move to newest SUNDIALS v7.4 for CI builds/tests ([#23](https://github.com/NREL/scikit-sundae/pull/23))
-- Move to newest SUNDIALS v7.3 for CI builds/tests ([#16](https://github.com/NREL/scikit-sundae/pull/16))
-- Add `reduce_bandwidth` function to help restructure sparse problems ([#15](https://github.com/NREL/scikit-sundae/pull/15))
-- Implement interfaces for Jacobian-vector products ([#13](https://github.com/NREL/scikit-sundae/pull/13))
-- Allow preconditioning for iterative solvers ([#12](https://github.com/NREL/scikit-sundae/pull/12))
-- Enable OpenBLAS-linked LAPACK linear solvers ([#11](https://github.com/NREL/scikit-sundae/pull/11))
-- Add iterative linear solvers to IDA and CVODE ([#10](https://github.com/NREL/scikit-sundae/pull/10))
-- Allow `numpy` types in options checks for both `CVODE` and `IDA` ([#8](https://github.com/NREL/scikit-sundae/pull/8))
-- Expose linear solver option that uses SuperLU_MT ([#6](https://github.com/NREL/scikit-sundae/pull/6))
-- New `jacband` module for support finding sparsity/bandwidth ([#6](https://github.com/NREL/scikit-sundae/pull/6))
-- Custom `sparseDQJac` routines available by supplying `sparsity` ([#6](https://github.com/NREL/scikit-sundae/pull/6))
-- Changed signature inspections to support decorated `jit` functions ([#3](https://github.com/NREL/scikit-sundae/pull/3))
+- Enforce constraints when `**LSSparseDQJac` funcs are used ([#32](https://github.com/NatLabRockies/scikit-sundae/pull/32))
+- Drop Python 3.9 and add support for 3.14 in tests/release ([#31](https://github.com/NatLabRockies/scikit-sundae/pull/31))
+- Move to newest SUNDIALS v7.5 for CI builds/tests ([#30](https://github.com/NatLabRockies/scikit-sundae/pull/30))
+- Add version warning banner to docs for dev and older releases ([#28](https://github.com/NatLabRockies/scikit-sundae/pull/28]))
+- Move to newest SUNDIALS v7.4 for CI builds/tests ([#23](https://github.com/NatLabRockies/scikit-sundae/pull/23))
+- Move to newest SUNDIALS v7.3 for CI builds/tests ([#16](https://github.com/NatLabRockies/scikit-sundae/pull/16))
+- Add `reduce_bandwidth` function to help restructure sparse problems ([#15](https://github.com/NatLabRockies/scikit-sundae/pull/15))
+- Implement interfaces for Jacobian-vector products ([#13](https://github.com/NatLabRockies/scikit-sundae/pull/13))
+- Allow preconditioning for iterative solvers ([#12](https://github.com/NatLabRockies/scikit-sundae/pull/12))
+- Enable OpenBLAS-linked LAPACK linear solvers ([#11](https://github.com/NatLabRockies/scikit-sundae/pull/11))
+- Add iterative linear solvers to IDA and CVODE ([#10](https://github.com/NatLabRockies/scikit-sundae/pull/10))
+- Allow `numpy` types in options checks for both `CVODE` and `IDA` ([#8](https://github.com/NatLabRockies/scikit-sundae/pull/8))
+- Expose linear solver option that uses SuperLU_MT ([#6](https://github.com/NatLabRockies/scikit-sundae/pull/6))
+- New `jacband` module for support finding sparsity/bandwidth ([#6](https://github.com/NatLabRockies/scikit-sundae/pull/6))
+- Custom `sparseDQJac` routines available by supplying `sparsity` ([#6](https://github.com/NatLabRockies/scikit-sundae/pull/6))
+- Changed signature inspections to support decorated `jit` functions ([#3](https://github.com/NatLabRockies/scikit-sundae/pull/3))
 
 ### Optimizations
-- Use `np.testing` where possible in tests for more informative fail statements ([#14](https://github.com/NREL/scikit-sundae/pull/14))
-- Updates to be compliant with Cython deprecations of `IF/ELIF/ELSE` and `DEF` ([#5](https://github.com/NREL/scikit-sundae/pull/5))
-- Use single-line memory views and pointer addressing for `np2ptr` and `np2smat` ([#5](https://github.com/NREL/scikit-sundae/pull/5))
-- Use `micromamba` instead of `miniconda` in CI ([#3](https://github.com/NREL/scikit-sundae/pull/3))
+- Use `np.testing` where possible in tests for more informative fail statements ([#14](https://github.com/NatLabRockies/scikit-sundae/pull/14))
+- Updates to be compliant with Cython deprecations of `IF/ELIF/ELSE` and `DEF` ([#5](https://github.com/NatLabRockies/scikit-sundae/pull/5))
+- Use single-line memory views and pointer addressing for `np2ptr` and `np2smat` ([#5](https://github.com/NatLabRockies/scikit-sundae/pull/5))
+- Use `micromamba` instead of `miniconda` in CI ([#3](https://github.com/NatLabRockies/scikit-sundae/pull/3))
 
 ### Bug Fixes
-- Move to `cibuildwheel` for releases due to segfaults on Linux ([#33](https://github.com/NREL/scikit-sundae/pull/33))
-- Fixed import typo in docstring examples for `RichResult` ([#29](https://github.com/NREL/scikit-sundae/pull/29))
-- Resolve exception propagation consistently for Cython v3.1 and up ([#20](https://github.com/NREL/scikit-sundae/pull/20))
-- Fix memory leak when `init_step` is repeatedly called in `CVODE` and `IDA` ([#19](https://github.com/NREL/scikit-sundae/pull/19))
-- Add `sign_y` terms and default to `np.float64` for floating type in `j_pattern` ([#7](https://github.com/NREL/scikit-sundae/pull/7))
+- Move to `cibuildwheel` for releases due to segfaults on Linux ([#33](https://github.com/NatLabRockies/scikit-sundae/pull/33))
+- Fixed import typo in docstring examples for `RichResult` ([#29](https://github.com/NatLabRockies/scikit-sundae/pull/29))
+- Resolve exception propagation consistently for Cython v3.1 and up ([#20](https://github.com/NatLabRockies/scikit-sundae/pull/20))
+- Fix memory leak when `init_step` is repeatedly called in `CVODE` and `IDA` ([#19](https://github.com/NatLabRockies/scikit-sundae/pull/19))
+- Add `sign_y` terms and default to `np.float64` for floating type in `j_pattern` ([#7](https://github.com/NatLabRockies/scikit-sundae/pull/7))
 
 ### Breaking Changes
 None.
 
-## [v1.0.0](https://github.com/NREL/scikit-sundae/tree/v1.0.0)
+## [v1.0.0](https://github.com/NatLabRockies/scikit-sundae/tree/v1.0.0)
 This is the first official release of scikit-SUNDAE. Main features/capabilities are listed below.
 
 ### Features

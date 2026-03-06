@@ -82,7 +82,7 @@ Missing Binaries
 ^^^^^^^^^^^^^^^^
 If pre-built binary distributions are not available for your platform, we encourage you to `submit an issue on GitHub`_ so that we can look into adding it in the future. There are already plans to add ARM support for Windows and Linux, but there is no timeline on when this will be completed. Be aware that adding new platform-specific binaries to our release workflow is not trivial. If you do submit an issue, do not expect a quick fix.
 
-.. _submit an issue on GitHub: https://github.com/NREL/scikit-sundae/issues
+.. _submit an issue on GitHub: https://github.com/NatLabRockies/scikit-sundae/issues
 
 Additionally, you can follow the instructions below to build the package from the source distribution. If you use the conda package manager then this is relatively straightforward. Even if it sounds intimidating, we highly recommend you give it a try to get up and going now rather than waiting for us to "officially" support your platform in a future release. 
 

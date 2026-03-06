@@ -8,7 +8,7 @@ Before starting on a bug fix or developing a new feature for scikit-SUNDAE, plea
 Steps to Report an Issue
 ------------------------
 1. Check for existing issues
-    - Always check the `issues page <https://github.com/NREL/scikit-sundae/issues>`_ on GitHub before starting any new work.
+    - Always check the `issues page <https://github.com/NatLabRockies/scikit-sundae/issues>`_ on GitHub before starting any new work.
     - If a bug report or new feature request already exists, review the comments and status to see if someone is already working on it.
     - If you are interested in working on the issue, leave a comment requesting the issue be assigned to you. Feel free to express your interest or add any additional context if you are experiencing the same bug or would benefit from the new feature.
 

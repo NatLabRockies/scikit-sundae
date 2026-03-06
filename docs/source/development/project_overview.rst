@@ -45,7 +45,7 @@ Installation is made simple via binary distributions, and dependencies are autom
 
 Project Origins
 ---------------
-scikit-SUNDAE was written by researchers at the **National Renewable Energy Laboratory (NREL)** primarily to solve physics-based battery models. Modeling in Python typically allows for rapid development and makes codebases more shareable. However, there was an identified gap in Python's numerical computing ecosystem: the lack of accessible DAE solvers. While ODE solvers are widely available in many packages, DAE solvers are not as prevalent.
+scikit-SUNDAE was written by researchers at the **National Laboratory of the Rockies (NLR)** primarily to solve physics-based battery models. Modeling in Python typically allows for rapid development and makes codebases more shareable. However, there was an identified gap in Python's numerical computing ecosystem: the lack of accessible DAE solvers. While ODE solvers are widely available in many packages, DAE solvers are not as prevalent.
 
 scikit-SUNDAE started out as a replacement for `scikits-odes <https://scikits-odes.readthedocs.io>`_, which also provides SUNDIALS bindings, but requires building from source. The goal was to offer a simpler installation process, with binary distributions that are consistent across major platforms (PyPI and conda).
 
@@ -57,6 +57,6 @@ While there are no immediate plans to add new solvers or additional features, sc
 
 Contributions
 -------------
-scikit-SUNDAE is fully functional and already includes most of the planned features. However, we welcome contributions and ideas for new solvers or additional options. If you're interested in contributing, please submit an `issue <https://github.com/NREL/scikit-sundae/issues>`_ to start a discussion about your proposed feature.
+scikit-SUNDAE is fully functional and already includes most of the planned features. However, we welcome contributions and ideas for new solvers or additional options. If you're interested in contributing, please submit an `issue <https://github.com/NatLabRockies/scikit-sundae/issues>`_ to start a discussion about your proposed feature.
 
 Whether you want to fix bugs, write tests, or suggest new functionality, contributions are welcome! Any major changes should be preceded by an open discussion, ensuring alignment with the project's goals and structure.

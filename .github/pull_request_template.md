@@ -4,7 +4,7 @@ Please include a summary of the change and which issue is fixed. Please also inc
 Fixes # (issue)
 
 ## Type of change
-Please add a line in the relevant section of [CHANGELOG.md](https://github.com/NREL/scikit-sundae/blob/main/CHANGELOG.md) to document the change (include PR #) - note reverse order of PR #s. If necessary, also add to the list of breaking changes.
+Please add a line in the relevant section of [CHANGELOG.md](https://github.com/NatLabRockies/scikit-sundae/blob/main/CHANGELOG.md) to document the change (include PR #) - note reverse order of PR #s. If necessary, also add to the list of breaking changes.
 
 - [ ] New feature (non-breaking change which adds functionality)
 - [ ] Optimization (back-end change that improves speed/readability/etc.)
