@@ -6,7 +6,7 @@ from sksundae import ida
 from sksundae._cy_common import config
 
 N = 10  # number of repeats for Robertson problem
-has_superlu = config['SUNDIALS_SUPERLUMT_ENABLED'] == "True"
+has_superlu = config['SUNDIALS_SUPERLUMT_ENABLED'] == 'True'
 
 
 def resfn_narrow(t, y, yp, res):
@@ -86,3 +86,38 @@ def test_sparse_solver():
 
     soln = solver.solve(tspan, y0, yp0)
     assert soln.success
+
+
+@pytest.mark.skipif(not has_superlu, reason='SuperLU_MT not enabled')
+def test_user_jacfn():
+
+    log = []
+
+    def resfn(t, y, yp, res):
+        # Simple DAE residual expressions.
+        res[0] = yp[0] + y[0]
+        res[1] = y[0] - y[1]
+
+    def jacfn(t, y, yp, res, cj, JJ):
+        # Analytical Jacobian. JJ is a 1D array of length 3 due to only
+        # three non-zero entries. Values are indexed in a CSC format.
+        log.append('jacfn called.')
+        JJ[0] = 1.0 + cj  # dres0/dy0 + cj*dres0/dyp0
+        JJ[1] = 1.0       # dres1/dy0 + cj*dres1/dyp0
+        JJ[2] = -1.0      # dres1/dy1 + cj*dres1/dyp1
+
+    sparsity = np.array([[1, 0], [1, 1]])  # Jacobian sparsity pattern
+
+    with pytest.warns(UserWarning):  # warns jacfn overrides sparsity, good
+        solver = ida.IDA(
+            resfn,
+            jacfn=jacfn,
+            algebraic_idx=[1],  # y[1] is purely algebraic
+            sparsity=sparsity,
+            linsolver='sparse',
+        )
+
+    soln = solver.solve([0, 1], [1.0, 1.0], [0.0, 0.0])
+
+    assert soln.success
+    assert 'jacfn called.' in log  # jacfn was called, not ignored
