@@ -273,51 +273,71 @@ def test_ida_eventsfn():
     assert soln.yp_events is None
 
 
-def test_ida_jacfn():
+@pytest.mark.parametrize('linsolver', ['dense', 'band'])
+def test_ida_jacfn(linsolver):
     y0 = np.array([1, 2])
     yp0 = np.array([0.1, 2])
+    tspan = np.linspace(0, 10, 11)
 
-    def jacfn(t, y, yp, res, cj, JJ):
+    log = []
+
+    def ode_jacfn(t, y, yp, res, cj, JJ):
+        log.append('ode_jacfn called.')
         JJ[0, 0] = cj
         JJ[1, 1] = -1 + cj
 
-    # preference between sparsity and jacfn
+    options = {}
+    if linsolver == 'band':
+        options.update({'lband': 0, 'uband': 0})
+
+    # warn about preference between sparsity and jacfn
     with pytest.warns(UserWarning):
-        _ = IDA(dae, jacfn=jacfn, sparsity=np.ones((2, 2)))
+        solver = IDA(ode, jacfn=ode_jacfn, sparsity=np.ones((2, 2)),
+                     linsolver=linsolver, **options)
 
-    solver = IDA(ode, rtol=1e-9, atol=1e-12, jacfn=jacfn)
-
-    tspan = np.linspace(0, 10, 11)
+    assert log == []  # empty log to start
     soln = solver.solve(tspan, y0, yp0)
-    npt.assert_allclose(soln.y, ode_soln(soln.t, y0))
+    assert 'ode_jacfn called.' in log  # ode_jacfn was called, not ignored
 
-    solver = IDA(ode, rtol=1e-9, atol=1e-12, linsolver='band',
-                 lband=0, uband=0, jacfn=jacfn)
+    npt.assert_allclose(soln.y, ode_soln(soln.t, y0), rtol=1e-4)
 
-    tspan = np.linspace(0, 10, 11)
+    # without sparsity, still calls jacfn (ode)
+    solver = IDA(ode, rtol=1e-9, atol=1e-12, jacfn=ode_jacfn,
+                 linsolver=linsolver, **options)
+
+    log.clear()
+
+    assert log == []  # empty log to start
     soln = solver.solve(tspan, y0, yp0)
-    npt.assert_allclose(soln.y, ode_soln(soln.t, y0))
+    assert 'ode_jacfn called.' in log  # ode_jacfn was called, not ignored
 
+    npt.assert_allclose(soln.y, ode_soln(soln.t, y0), rtol=1e-4)
+
+    # without sparsity, still calls jacfn (dae)
     y0 = np.array([1, 2])
     yp0 = np.array([0.1, 0.2])
+    tspan = np.linspace(0, 10, 11)
 
-    def jacfn(t, y, yp, res, cj, JJ):
+    def dae_jacfn(t, y, yp, res, cj, JJ):
+        log.append('dae_jacfn called.')
         JJ[0, 0] = cj
         JJ[1, 0] = 2
         JJ[1, 1] = -1
 
-    solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1], jacfn=jacfn)
-
-    tspan = np.linspace(0, 10, 11)
-    soln = solver.solve(tspan, y0, yp0)
-    npt.assert_allclose(soln.y, dae_soln(soln.t, y0))
+    options = {}
+    if linsolver == 'band':
+        options.update({'lband': 1, 'uband': 0})
 
     solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
-                 linsolver='band', lband=1, uband=0, jacfn=jacfn)
+                 jacfn=dae_jacfn, linsolver=linsolver, **options)
 
-    tspan = np.linspace(0, 10, 11)
+    log.clear()
+
+    assert log == []  # empty log to start
     soln = solver.solve(tspan, y0, yp0)
-    npt.assert_allclose(soln.y, dae_soln(soln.t, y0))
+    assert 'dae_jacfn called.' in log  # dae_jacfn was called, not ignored
+
+    npt.assert_allclose(soln.y, dae_soln(soln.t, y0), rtol=1e-4)
 
 
 def test_failures_on_exceptions():

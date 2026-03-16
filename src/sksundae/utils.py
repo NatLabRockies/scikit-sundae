@@ -16,13 +16,13 @@ class RichResult:
 
     def __init__(self, **kwargs):
         """
-        This class is a based off the ``_RichResult`` class in the ``scipy``
+        This class is a based off the `_RichResult` class in the `scipy`
         library. It combines a series of formatting functions to make the
         printed 'repr' easy to read. Use this class directly by passing in
         any number of keyword arguments, or use it as a base class to have
         custom classes for different result types.
 
-        Inheriting classes should define the class attribute ``_order_keys``
+        Inheriting classes should define the class attribute `_order_keys`
         which is a list of strings that defines how output fields are sorted
         when an instance is printed.
 
@@ -35,11 +35,11 @@ class RichResult:
 
         Examples
         --------
-        The example below demonstrates how to define the ``_order_keys`` class
+        The example below demonstrates how to define the `_order_keys` class
         attribute for custom sorting. If arguments are not in the list, they
         are placed at the end based on the order they were given. Note that
-        ``_order_keys`` only provides sorting support and that no errors are
-        raised if an argument is not present, e.g., ``third`` below.
+        `_order_keys` only provides sorting support and that no errors are
+        raised if an argument is not present, e.g., `third` below.
 
         .. code-block:: python
 
@@ -51,7 +51,7 @@ class RichResult:
             result = CustomResult(second=None, last=None, first=None)
             print(result)
 
-        ``RichResult`` can also be used directly, without any custom sorting.
+        `RichResult` can also be used directly, without any custom sorting.
         Arguments will print based on the order they were input. Instances will
         still have a fully formatted 'repr', including formatted arrays.
 

@@ -6,7 +6,7 @@ from sksundae import cvode
 from sksundae._cy_common import config
 
 N = 10  # number of repeats for Van der Pol problem
-has_superlu = config['SUNDIALS_SUPERLUMT_ENABLED'] == "True"
+has_superlu = config['SUNDIALS_SUPERLUMT_ENABLED'] == 'True'
 
 
 def rhsfn_narrow(t, y, yp):
@@ -72,3 +72,37 @@ def test_sparse_solver():
 
     soln = solver.solve(tspan, y0)
     assert soln.success
+
+
+@pytest.mark.skipif(not has_superlu, reason='SuperLU_MT not enabled')
+def test_user_jacfn():
+
+    log = []
+
+    def rhsfn(t, y, yp):
+        # Simple ODE right-hand-side expressions.
+        yp[0] = -y[0]
+        yp[1] = y[0] - y[1]
+
+    def jacfn(t, y, yp, JJ):
+        # Analytical Jacobian. JJ is a 1D array of length 3 due to only
+        # three non-zero entries. Values are indexed in a CSC format.
+        log.append('jacfn called.')
+        JJ[0] = -1.0  # dyp0/dy0
+        JJ[1] = 1.0   # dyp1/dy0
+        JJ[2] = -1.0  # dyp1/dy1
+
+    sparsity = np.array([[1, 0], [1, 1]])  # Jacobian sparsity pattern
+
+    with pytest.warns(UserWarning):  # warns jacfn overrides sparsity, good
+        solver = cvode.CVODE(
+            rhsfn,
+            jacfn=jacfn,
+            sparsity=sparsity,
+            linsolver='sparse',
+        )
+
+    soln = solver.solve([0, 1], [1.0, 1.0])
+
+    assert soln.success
+    assert 'jacfn called.' in log  # jacfn was called, not ignored

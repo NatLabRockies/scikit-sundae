@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
   - name: I just have a question...
-    url: https://github.com/NREL/scikit-sundae/discussions
+    url: https://github.com/NatLabRockies/scikit-sundae/discussions
     about: Join our discussion instead. Search for existing questions, or ask a new one!

@@ -9,7 +9,7 @@
 import sksundae as sun
 
 project = 'scikit-sundae'
-copyright = 'Alliance for Sustainable Energy, LLC'
+copyright = 'Alliance for Energy Innovation, LLC'
 author = 'Corey R. Randall'
 version = sun.__version__
 release = sun.__version__
@@ -48,6 +48,7 @@ source_suffix = {
     '.myst': 'myst-nb',
 }
 
+default_role = 'literal'
 highlight_language = 'console'
 
 
@@ -74,7 +75,7 @@ html_theme_options = {
     'icon_links': [
         {
             'name': 'GitHub',
-            'url': 'https://github.com/NREL/scikit-sundae',
+            'url': 'https://github.com/NatLabRockies/scikit-sundae',
             'icon': 'fa-brands fa-github',
         },
         {

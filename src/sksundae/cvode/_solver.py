@@ -20,7 +20,7 @@ class CVODE:
         Parameters
         ----------
         rhsfn : Callable
-            Right-hand-side function with signature ``f(t, y, yp[, userdata])``.
+            Right-hand-side function with signature `f(t, y, yp[, userdata])`.
             See the notes for more information.
         **options : dict, optional
             Keyword arguments to describe the solver options. A full list of
@@ -54,8 +54,8 @@ class CVODE:
             'dense' and 'band'. They use OpenBLAS-linked LAPACK [4]_ routines,
             but can have noticeable overhead for small (<100) systems.
         lband : int or None, optional
-            Lower Jacobian bandwidth. Given an ODE system ``yp = f(t, y)``,
-            the Jacobian is ``J = df_i/dy_j``. Required when 'linsolver' is
+            Lower Jacobian bandwidth. Given an ODE system `yp = f(t, y)`,
+            the Jacobian is `J = df_i/dy_j`. Required when 'linsolver' is
             'band'. Use zero if no values are below the main diagonal. Defaults
             to None.
         uband : int or None, optional
@@ -97,11 +97,11 @@ class CVODE:
         constraints_type : array_like[int] or None, optional
             If 'constraints_idx' is not None, then this option must include an
             array of equal length specifying the types of constraints to apply.
-            Values should be in ``{-2, -1, 1, 2}`` which apply ``y[i] < 0``,
-            ``y[i] <= 0``, ``y[i] >=0,`` and ``y[i] > 0``, respectively. The
+            Values should be in `{-2, -1, 1, 2}` which apply `y[i] < 0`,
+            `y[i] <= 0`, `y[i] >=0`, and `y[i] > 0`, respectively. The
             default is None.
         eventsfn : Callable or None, optional
-            Events function with signature ``g(t, y, events[, userdata])``.
+            Events function with signature `g(t, y, events[, userdata])`.
             If None (default), no events are tracked. See the notes for more
             information. Requires 'num_events' be set when not None.
 
@@ -111,21 +111,23 @@ class CVODE:
                     Specifies solver behavior for each event. A boolean stops
                     the solver (True) or just records the event (False). An
                     integer stops the solver after than many occurrences. The
-                    default is ``[True]*num_events``.
+                    default is `[True]*num_events`.
                 direction: list[int], optional
-                    Determines which event slopes to track: ``-1`` (negative),
-                    ``1`` (positive), or ``0`` (both). If not provided the
-                    default ``[0]*num_events`` is used.
+                    Determines which event slopes to track: `-1` (negative),
+                    `+1` (positive), or `0` (both). If not provided the
+                    default `[0]*num_events` is used.
 
-            You can assign attributes like ``eventsfn.terminal = [True]`` to
+            You can assign attributes like `eventsfn.terminal = [True]` to
             any function in Python, after it has been defined.
         num_events : int, optional
             Number of events to track. The default is 0.
         jacfn : Callable or None, optional
-            Jacobian function like ``J(t, y, yp, JJ[, userdata])``. Fills the
+            Jacobian function like `J(t, y, yp, JJ[, userdata])`. Fills the
             pre-allocated 2D matrix 'JJ' with values defined by the Jacobian
-            ``JJ[i,j] = dyp_i/dy_j``. An internal finite difference method is
-            applied when None (default).
+            `JJ[i,j] = dyp_i/dy_j`. An internal finite difference method is
+            applied when None (default). Note that the template for `JJ` is
+            determined by the linear solver choice: a 1D array for 'sparse' or
+            2D array for 'dense' and 'band'. See the notes for more information.
         precond : CVODEPrecond or None, optional
             Preconditioner functions. Only compatible with iterative linear
             solvers. Must be an instance of CVODEPrecond if not None (default).
@@ -142,20 +144,74 @@ class CVODE:
         reads from pre-allocated memory. Output arrays (e.g., 'yp', 'events',
         and 'JJ') from each user-defined callable should be filled within each
         respective function. When setting values across the entire array/matrix
-        at once, don't forget to use ``[:]`` to fill the existing array rather
-        than overwriting it. For example, using ``yp[:] = f(t, y)`` is correct
-        whereas ``yp = f(t, y)`` is not.
+        at once, don't forget to use `[:]` to fill the existing array rather
+        than overwriting it. For example, using `yp[:] = f(t, y)` is correct
+        whereas `yp = f(t, y)` is not.
 
         When any user-defined function require data outside of their normal
         arguments, you can supply optional 'userdata'. When given, 'userdata'
         must appear in ALL function signatures ('rhsfn', 'eventsfn', 'jacfn',
         'precond', and 'jactimes') even if it is not used in all functions. Of
-        course this does not apply to functions that are provided as ``None``.
+        course this does not apply to functions that are provided as `None`.
         Note that 'userdata' only takes up one argument position; however,
         'userdata' can be any Python object. Therefore, to pass more than one
         extra argument you should pack all data into a single tuple, dict,
         dataclass, etc. and pass them all together as 'userdata'. The data can
         be unpacked as needed within the functions.
+
+        When using user-denfined Jacobians supplied via 'jacfn', the allocated
+        memory for `JJ` depends on the chosen linear solver. For the 'dense' and
+        'band' solver options, `JJ` is a normal 2D array with shape `(N, N)`,
+        where `N` is the size of the system. This means that the template takes
+        up more memory than is actually necessary for the banded solver. This
+        is a choice of convenience, however, to avoid requiring the user to
+        deal with complex indexing in compressed formats. There is a plan for
+        future releases to allow users to decide between this convenient, but
+        less memory-efficient template and a more memory-efficient 1D template
+        that only tracks entries within the bandwidth. While users currently
+        have access to write to indexes outside the bandwidth in the present
+        implementation for the banded solver, any values written outside the
+        given bandwidth are internally ignored by the solver. The `JJ` template
+        details for the 'sparse' solver option do not follow the same 2D format,
+        and are discussed below.
+
+        When users chose to provide their own Jacobian via 'jacfn' and specify
+        use of the 'sparse' linear solver, the memory allocated for `JJ` is a
+        1D array with length equal to the number of non-zero entries in the
+        supplied sparsity pattern. This is a choice made for memory efficiency,
+        but does require users to understand the indexing of the `JJ` entries.
+        The exposed 1D array is in compressed sparse column (CSC) format, which
+        means that the non-zero entries are ordered first by column and then by
+        row. A minimal example is provided below for a 2x2 Jacobian with three
+        non-zero entries.
+
+        .. code-block:: python
+
+            import numpy as np
+            import sksundae as sun
+
+            def rhsfn(t, y, yp):
+                # Simple ODE right-hand-side expressions.
+                yp[0] = -y[0]
+                yp[1] = y[0] - y[1]
+
+            def jacfn(t, y, yp, JJ):
+                # Analytical Jacobian. JJ is a 1D array of length 3 due to only
+                # three non-zero entries. Values are indexed in a CSC format.
+                JJ[0] = -1.0  # dyp0/dy0
+                JJ[1] = 1.0   # dyp1/dy0
+                JJ[2] = -1.0  # dyp1/dy1
+
+            sparsity = np.array([[1, 0], [1, 1]])  # Jacobian sparsity pattern
+
+            solver = sun.cvode.CVODE(
+                rhsfn,
+                jacfn=jacfn,
+                sparsity=sparsity,
+                linsolver='sparse',
+            )
+
+            soln = solver.solve([0, 1], [1.0, 1.0])
 
         References
         ----------
@@ -300,8 +356,8 @@ class CVODE:
         Parameters
         ----------
         tspan : array_like[float], shape(n >= 2,)
-            Solution time span. If ``len(tspan) == 2``, the solution will be
-            saved at internally chosen steps. When ``len(tspan) > 2``, the
+            Solution time span. If `len(tspan) == 2`, the solution will be
+            saved at internally chosen steps. When `len(tspan) > 2`, the
             solution saves the output at each specified time.
         y0 : array_like[float], shape(m,)
             State variable values at 'tspan[0]'. The length should match the
@@ -351,7 +407,7 @@ class CVODEResult(_CVODEResult):
             indices in 't' and columns match indexing from 'y0'.
         i_events : ndarray, shape(k, num_events) or None
             Provides an array for each detected event 'k' specifying indices
-            for which event(s) occurred. ``i_events[k,i] != 0`` if 'events[i]'
+            for which event(s) occurred. `i_events[k,i] != 0` if 'events[i]'
             occurred at 't_events[k]'. The sign of 'i_events' indicates the
             direction of zero-crossing:
 
@@ -375,7 +431,7 @@ class CVODEResult(_CVODEResult):
         Notes
         -----
         Terminal events are appended to the end of 't' and 'y'. However, if an
-        event was not terminal then it will only appear in '\\*_events' outputs
+        event was not terminal then it will only appear in `*_events` outputs
         and not within the main output arrays.
 
         'nfev' and 'njev' are cumulative for stepwise solution approaches. The

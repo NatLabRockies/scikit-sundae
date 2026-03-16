@@ -140,13 +140,13 @@ def j_pattern(rhsfn: Callable, t0: float, y0: ndarray, yp0: ndarray = None,
     """
     Approximate the Jacobian pattern.
 
-    This function uses a numerical Jacobian approximation for ``rhsfn`` about
+    This function uses a numerical Jacobian approximation for `rhsfn` about
     the given point to determine the Jacobian pattern. It requires evaluating
-    the given function ``N`` times based on the size of ``y0`` so it can be
+    the given function `N` times based on the size of `y0` so it can be
     slow for large systems.
 
     Be aware that this routine may return zeros in locations where ones should
-    be depending on the evaluation point ``y0`` (and ``yp0``). It is left to
+    be depending on the evaluation point `y0` (and `yp0`). It is left to
     the user to determine a representative evaluation point that ensures all
     relevant relationships are correctly determined.
 
@@ -156,7 +156,7 @@ def j_pattern(rhsfn: Callable, t0: float, y0: ndarray, yp0: ndarray = None,
         Right-hand-side function for either an :class:`~sksundae.ida.IDA` or
         :class:`~sksundae.cvode.CVODE` problem. Signatures vary, see the class
         docstrings for more info. The correct routine is automatically selected
-        depending on whether or not ``yp0`` is given. IDA requires that ``yp0``
+        depending on whether or not `yp0` is given. IDA requires that `yp0`
         be given and CVODE expects it to be None.
     t0 : float
         Input time to use in 'rhsfn'.
@@ -171,8 +171,8 @@ def j_pattern(rhsfn: Callable, t0: float, y0: ndarray, yp0: ndarray = None,
     -------
     pattern : 2D np.array
         Jacobian pattern represented by a 2D numpy array with shape (N, N).
-        Ones or zeros in the position ``A[i, j]`` mean that function ``F_i``
-        either is or is not dependedent on variable ``y_j``, respectively.
+        Ones or zeros in the position `A[i, j]` mean that function `F_i`
+        either is or is not dependedent on variable `y_j`, respectively.
 
     """
 
@@ -189,8 +189,8 @@ def bandwidth(A: ndarray) -> tuple[int]:
     """
     Return half bandwidths of a 2D array.
 
-    Uses the ``scipy.linalg.bandwidth`` function to determine the lower and
-    upper bandwidths of a given array. Use in conjunction with ``j_pattern``
+    Uses the `scipy.linalg.bandwidth` function to determine the lower and
+    upper bandwidths of a given array. Use in conjunction with `j_pattern`
     to find the bandwidths of a Jacobian pattern.
 
     Parameters
@@ -203,7 +203,7 @@ def bandwidth(A: ndarray) -> tuple[int]:
     bands : tuple[int]
         A 2-tuple of integers indicating the lower and upper half bandwidths
         of the given matrix. A zero denotes that there are no non-zero elements
-        on that side. The full bandwidth is ``lband + uband + 1``.
+        on that side. The full bandwidth is `lband + uband + 1`.
 
     """
     from scipy.linalg import bandwidth
@@ -215,8 +215,8 @@ def reduce_bandwidth(A: ndarray | spmatrix,
     """
     Find a row/col reordering to reduce bandwidth.
 
-    Uses the Reverse Cuthill-McKee algorithm from ``scipy.sparse.csgraph`` to
-    determine an index rearragement for rows and columns of ``A`` that reduce
+    Uses the Reverse Cuthill-McKee algorithm from `scipy.sparse.csgraph`o
+    determine an index rearragement for rows and columns of `A` that reduce
     the bandwidth.
 
     Parameters

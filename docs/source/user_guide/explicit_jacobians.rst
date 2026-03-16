@@ -90,13 +90,13 @@ In scikit-SUNDAE, users can supply explicit Jacobian functions for both CVODE an
 
     solver = CVODE(rhsfn, jacfn=jacfn)
 
-As demonstrated in the examples, the Jacobian functions do not have return values. Instead, they each have ``JJ`` inputs, which are pre-allocated 2D matrices that you can fill within the functions. This is similar to how the residual and right-hand-side functions do not require return values and instead fill the pre-allocated ``res`` and ``yp`` arrays, respectively. The optional ``userdata`` argument must be present in ALL or NO user-defined functions. For example, we provide it in both expressions for the ``IDA`` example, but neither in the ``CVODE`` example. Even if ``userdata`` is only used in one user-defined function, it must be present in all signatures so the solver can handle them correctly. 
+As demonstrated in the examples, the Jacobian functions do not have return values. Instead, they each have `JJ` inputs, which are pre-allocated 2D matrices that you can fill within the functions. This is similar to how the residual and right-hand-side functions do not require return values and instead fill the pre-allocated `res` and `yp` arrays, respectively. The optional `userdata` argument must be present in ALL or NO user-defined functions. For example, we provide it in both expressions for the `IDA` example, but neither in the `CVODE` example. Even if `userdata` is only used in one user-defined function, it must be present in all signatures so the solver can handle them correctly. 
 
 .. note:: 
     
-    Take care to not overwrite any pre-allocated arrays. You should NEVER set the variable directly equal to a value, e.g., ``JJ = ...``. Instead, ALWAYS use indices. Even if you can fill all values in ``JJ`` using vector math, the correct way to do this is to write out ``JJ[:,:] = ...``. This makes sure the pre-allocated matrix is filled rather than being overwritten. If you want to make sure the matrix starts out as zeros, use something like ``JJ[:,:] = np.zeros_like(JJ)``, and then fill in the non-zero indices.
+    Take care to not overwrite any pre-allocated arrays. You should NEVER set the variable directly equal to a value, e.g., `JJ = ...`. Instead, ALWAYS use indices. Even if you can fill all values in `JJ` using vector math, the correct way to do this is to write out `JJ[:,:] = ...`. This makes sure the pre-allocated matrix is filled rather than being overwritten. If you want to make sure the matrix starts out as zeros, use something like `JJ[:,:] = np.zeros_like(JJ)`, and then fill in the non-zero indices.
 
-In the case of the ``IDA`` example there is a ``cj`` defined in the input signature. This ``cj`` corresponds to the :math:`\alpha` value in :ref:`Mathematical Definitions` section. You do not need to define ``cj`` yourself, but you should include it in your expressions as needed. The SUNDIALS backend calculates ``cj`` for you based on the internal step size and order being used. It exists in the function signature so that it can be accessed in your Jacobian function as it is internally updated.
+In the case of the `IDA` example there is a `cj` defined in the input signature. This `cj` corresponds to the :math:`\alpha` value in :ref:`Mathematical Definitions` section. You do not need to define `cj` yourself, but you should include it in your expressions as needed. The SUNDIALS backend calculates `cj` for you based on the internal step size and order being used. It exists in the function signature so that it can be accessed in your Jacobian function as it is internally updated.
 
 Additional Considerations
 -------------------------
@@ -108,7 +108,7 @@ Benefits
 
 2. **Better Accuracy for Stiff Problems:** Stiff systems, where small changes in variables can cause large changes in the solution, benefit from explicit Jacobians because they allow for more precise linearization of the system.
 
-3. **Explicit Jacobians for Banded Problems:** If your problem has a banded Jacobian, it is still worth setting the linear solver to ``band`` rather than using the default ``dense``. The Python bindings have to copy arrays back and forth into forms that Python and C can understand. If you leave your solver as ``dense`` then the computation time to copy unnecessary zeros can add up, especially for large problems. Therefore, banded problems can see a stacked benefit from setting both options, i.e., the linear solver and Jacobian function.
+3. **Explicit Jacobians for Banded Problems:** If your problem has a banded Jacobian, it is still worth setting the linear solver to `band` rather than using the default `dense`. The Python bindings have to copy arrays back and forth into forms that Python and C can understand. If you leave your solver as `dense` then the computation time to copy unnecessary zeros can add up, especially for large problems. Therefore, banded problems can see a stacked benefit from setting both options, i.e., the linear solver and Jacobian function.
 
 Considerations and Tradeoffs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

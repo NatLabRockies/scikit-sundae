@@ -13,15 +13,15 @@ DAEs with no algebraic constraints).
 
 Accessing the documentation
 ---------------------------
-Documentation is accessible via Python's ``help()`` function which prints
+Documentation is accessible via Python's `help()` function which prints
 docstrings from a package, module, function, class, etc. You can also access
 the documentation by visiting the website, hosted on Read the Docs. The website
 includes search functionality and more detailed examples.
 
 Acknowledgements
 ----------------
-scikit-SUNDAE was written by researchers at the **National Renewable Energy
-Laboratory (NREL)**, primarily to solve physics-based battery models. Modeling
+scikit-SUNDAE was written by researchers at the **National Laboratory of the
+Rockies (NLR)**, primarily to solve physics-based battery models. Modeling
 in Python typically allows for rapid development and makes code more shareable.
 However, there was an identified gap in Python's numerical computing ecosystem:
 the lack of accessible DAE solvers. While ODE solvers are widely available in
@@ -48,8 +48,8 @@ distributed as well (e.g., SuperLU_MT, OpenBLAS, and LAPACK).
 .. _scikits-odes: https://scikits-odes.readthedocs.io
 .. _conda-forge: https://anaconda.org/conda-forge/sundials
 .. _scipy.integrate: https://docs.scipy.org/doc/scipy/reference/integrate.html
-.. _bundled license file: https://github.com/NREL/scikit-sundae/blob/main/ \
-                          LICENSES_bundled
+.. _bundled license file: https://github.com/NatLabRockies/scikit-sundae/blob/ \
+                          main/LICENSES_bundled
 
 """
 
@@ -62,4 +62,4 @@ from . import jacband
 
 __all__ = ['ida', 'utils', 'cvode', 'jacband', 'SUNDIALS_VERSION']
 
-__version__ = '1.1.1'
+__version__ = '1.1.2'
