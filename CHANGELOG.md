@@ -1,5 +1,10 @@
 # scikit-SUNDAE Changelog
 
+## [v1.1.2](https://github.com/NatLabRockies/scikit-sundae/tree/v1.1.2)
+
+### Bug Fixes
+- Fixes issue where `jacfn` is ignored when using `sparse` linear solver ([#47](https://github.com/NatLabRockies/scikit-sundae/pull/47))
+
 ## [v1.1.1](https://github.com/NatLabRockies/scikit-sundae/tree/v1.1.1)
 
 ### Bug Fixes
