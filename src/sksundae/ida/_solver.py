@@ -105,7 +105,7 @@ class IDA:
             If 'constraints_idx' is not None, then this option must include an
             array of equal length specifying the types of constraints to apply.
             Values should be in `{-2, -1, 1, 2}` which apply `y[i] < 0`,
-            `y[i] <= 0`, `y[i] >=0,` and `y[i] > 0`, respectively. The
+            `y[i] <= 0`, `y[i] >=0`, and `y[i] > 0`, respectively. The
             default is None.
         eventsfn : Callable or None, optional
             Events function with signature `g(t, y, yp, events[, userdata])`.
@@ -121,7 +121,7 @@ class IDA:
                     default is `[True]*num_events`.
                 direction: list[int], optional
                     Determines which event slopes to track: `-1` (negative),
-                    `1` (positive), or `0` (both). If not provided the
+                    `+1` (positive), or `0` (both). If not provided the
                     default `[0]*num_events` is used.
 
             You can assign attributes like `eventsfn.terminal = [True]` to
@@ -130,9 +130,12 @@ class IDA:
             Number of events to track. The default is 0.
         jacfn : Callable or None, optional
             Jacobian function like `J(t, y, yp, res, cj, JJ[, userdata])`.
-            The function should fill the pre-allocated 2D matrix 'JJ' with the
+            The function should fill the pre-allocated memory for 'JJ' with the
             values defined by `JJ[i,j] = dres_i/dy_j + cj*dres_i/dyp_j`. An
             internal finite difference method is applied when None (default).
+            Note that the template for `JJ` is determined by the linear solver
+            choice: a 1D array for 'sparse' or 2D array for 'dense' and 'band'.
+            See the notes for more information.
         precond : IDAPrecond or None, optional
             Preconditioner functions. Only compatible with iterative linear
             solvers. Must be an instance of IDAPrecond if not None (default).
@@ -163,6 +166,61 @@ class IDA:
         extra argument you should pack all data into a single tuple, dict,
         dataclass, etc. and pass them all together as 'userdata'. The data can
         be unpacked as needed within the functions.
+
+        When using user-denfined Jacobians supplied via 'jacfn', the allocated
+        memory for `JJ` depends on the chosen linear solver. For the 'dense' and
+        'band' solver options, `JJ` is a normal 2D array with shape `(N, N)`,
+        where `N` is the size of the system. This means that the template takes
+        up more memory than is actually necessary for the banded solver. This
+        is a choice of convenience, however, to avoid requiring the user to
+        deal with complex indexing in compressed formats. There is a plan for
+        future releases to allow users to decide between this convenient, but
+        less memory-efficient template and a more memory-efficient 1D template
+        that only tracks entries within the bandwidth. While users currently
+        have access to write to indexes outside the bandwidth in the present
+        implementation for the banded solver, any values written outside the
+        given bandwidth are internally ignored by the solver. The `JJ` template
+        details for the 'sparse' solver option do not follow the same 2D format,
+        and are discussed below.
+
+        When users chose to provide their own Jacobian via 'jacfn' and specify
+        use of the 'sparse' linear solver, the memory allocated for `JJ` is a
+        1D array with length equal to the number of non-zero entries in the
+        supplied sparsity pattern. This is a choice made for memory efficiency,
+        but does require users to understand the indexing of the `JJ` entries.
+        The exposed 1D array is in compressed sparse column (CSC) format, which
+        means that the non-zero entries are ordered first by column and then by
+        row. A minimal example is provided below for a 2x2 Jacobian with three
+        non-zero entries.
+
+        .. code-block:: python
+
+            import numpy as np
+            import sksundae as sun
+
+            def resfn(t, y, yp, res):
+                # Simple DAE residual expressions.
+                res[0] = yp[0] + y[0]
+                res[1] = y[0] - y[1]
+
+            def jacfn(t, y, yp, res, cj, JJ):
+                # Analytical Jacobian. JJ is a 1D array of length 3 due to only
+                # three non-zero entries. Values are indexed in a CSC format.
+                JJ[0] = 1.0 + cj  # dres0/dy0 + cj*dres0/dyp0
+                JJ[1] = 1.0       # dres1/dy0 + cj*dres1/dyp0
+                JJ[2] = -1.0      # dres1/dy1 + cj*dres1/dyp1
+
+            sparsity = np.array([[1, 0], [1, 1]])  # Jacobian sparsity pattern
+
+            solver = sun.ida.IDA(
+                resfn,
+                jacfn=jacfn,
+                algebraic_idx=[1],  # y[1] is purely algebraic
+                sparsity=sparsity,
+                linsolver='sparse',
+            )
+
+            soln = solver.solve([0, 1], [1.0, 1.0], [0.0, 0.0])
 
         References
         ----------

@@ -201,28 +201,43 @@ def test_cvode_eventsfn():
     assert soln.y_events is None
 
 
-def test_cvode_jacfn():
+@pytest.mark.parametrize('linsolver', ['dense', 'band'])
+def test_cvode_jacfn(linsolver):
     y0 = np.array([1, 2])
+    tspan = np.linspace(0, 10, 11)
+
+    log = []
 
     def jacfn(t, y, fy, JJ):
+        log.append('jacfn called.')
         JJ[1, 1] = 1
 
-    # preference between sparsity and jacfn
+    options = {}
+    if linsolver == 'band':
+        options.update({'lband': 0, 'uband': 0})
+
+    # warn about preference between sparsity and jacfn
     with pytest.warns(UserWarning):
-        _ = CVODE(ode, jacfn=jacfn, sparsity=np.ones((2, 2)))
+        solver = CVODE(ode, jacfn=jacfn, sparsity=np.ones((2, 2)),
+                       linsolver=linsolver, **options)
 
-    solver = CVODE(ode, rtol=1e-9, atol=1e-12, jacfn=jacfn)
-
-    tspan = np.linspace(0, 10, 11)
+    assert log == []  # empty log to start
     soln = solver.solve(tspan, y0)
-    npt.assert_allclose(soln.y, ode_soln(soln.t, y0))
+    assert 'jacfn called.' in log  # jacfn was called, not ignored
 
-    solver = CVODE(ode, rtol=1e-9, atol=1e-12, linsolver='band',
-                   lband=0, uband=0, jacfn=jacfn)
+    npt.assert_allclose(soln.y, ode_soln(soln.t, y0), rtol=1e-3)
 
-    tspan = np.linspace(0, 10, 11)
+    # without sparsity, still calls jacfn
+    solver = CVODE(ode, rtol=1e-9, atol=1e-12, jacfn=jacfn,
+                   linsolver=linsolver, **options)
+
+    log.clear()
+
+    assert log == []  # empty log to start
     soln = solver.solve(tspan, y0)
-    npt.assert_allclose(soln.y, ode_soln(soln.t, y0))
+    assert 'jacfn called.' in log  # jacfn was called, not ignored
+
+    npt.assert_allclose(soln.y, ode_soln(soln.t, y0), rtol=1e-3)
 
 
 def test_failures_on_exceptions():
