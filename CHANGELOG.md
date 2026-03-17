@@ -9,6 +9,7 @@
 ### Optimizations
 
 ### Bug Fixes
+- Fixes issue where `jacfn` is ignored when using `sparse` linear solver ([#48](https://github.com/NatLabRockies/scikit-sundae/pull/48))
 - Ensures exception propagations work correctly with numpy 2.4 release ([#41](https://github.com/NatLabRockies/scikit-sundae/pull/41))
 
 ### Breaking Changes
