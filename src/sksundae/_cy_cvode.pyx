@@ -382,9 +382,6 @@ cdef class _cvLSSparseDQJac:
         self.groups = groups
         self.sparsity = aux.sparsity
 
-        # store the instance in AuxData for access in wrappers
-        aux.jacfn = self
-
     def __call__(
         self,
         sunrealtype t,
@@ -697,6 +694,8 @@ cdef class CVODE:
         if self.aux.jacfn is None and self.aux.sparsity is not None:
             spjac = _cvLSSparseDQJac(self.aux)  # setup/store jacfn in AuxData
             spjac._setup_memory(self.mem)  # pass mem to access time step info
+
+            self.aux.jacfn = spjac  # assign spjac as jacfn for use in wrapper
             
         if self.aux.jacfn:
             flag = CVodeSetJacFn(self.mem, _jacfn_wrapper)
