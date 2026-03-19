@@ -1,5 +1,3 @@
-# noxfile.py
-
 import os
 import shutil
 
