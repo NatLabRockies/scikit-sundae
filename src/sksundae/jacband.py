@@ -21,7 +21,6 @@ if TYPE_CHECKING:  # pragma: no cover
 def _cvode_pattern(rhsfn: Callable, t0: float, y0: ndarray,
                    userdata: Any = None) -> ndarray:
     """Jacobian pattern for CVODE functions. Access via j_pattern()."""
-
     # wrap rhsfn for cases w/ and w/o userdata
     signature = inspect.signature(rhsfn)
 
@@ -76,7 +75,6 @@ def _cvode_pattern(rhsfn: Callable, t0: float, y0: ndarray,
 def _ida_pattern(resfn: Callable, t0: float, y0: ndarray, yp0: ndarray = None,
                  userdata: Any = None) -> ndarray:
     """Jacobian pattern for IDA functions. Access via j_pattern()."""
-
     # wrap resfn for cases w/ and w/o userdata
     signature = inspect.signature(resfn)
 
@@ -175,7 +173,6 @@ def j_pattern(rhsfn: Callable, t0: float, y0: ndarray, yp0: ndarray = None,
         either is or is not dependedent on variable `y_j`, respectively.
 
     """
-
     if yp0 is None:
         y0 = np.asarray(y0, dtype=float)
         return _cvode_pattern(rhsfn, t0, y0, userdata)

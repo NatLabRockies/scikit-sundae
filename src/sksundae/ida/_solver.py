@@ -14,7 +14,7 @@ class IDA:
 
     def __init__(self, resfn: Callable, **options) -> None:
         """
-        This class wraps the implicit differential algebraic (IDA) solver from
+        A class to wrap the implicit differential algebraic (IDA) solver from
         SUNDIALS [1]_ [2]_. IDA solves both ordinary differential equations
         (ODEs) and differiential agebraic equations (DAEs).
 

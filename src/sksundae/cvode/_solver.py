@@ -14,7 +14,7 @@ class CVODE:
 
     def __init__(self, rhsfn: Callable, **options) -> None:
         """
-        This class wraps the C-based variable-coefficient ordinary differential
+        A class to wrap the C-based variable-coefficient ordinary differential
         equations (CVODE) solver from SUNDIALS [1]_ [2]_.
 
         Parameters

@@ -1,5 +1,3 @@
-# pyproject.toml
-
 [build-system]
 requires = ["setuptools", "cython", "numpy", "packaging"]
 build-backend = "setuptools.build_meta"
@@ -43,6 +41,34 @@ version = {attr = "sksundae.__version__"}
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.ruff]
+line-length = 80
+exclude = ["build", "docs", "images", "reports", "C_programs"]
+
+[tool.ruff.lint]
+preview = true
+select = [
+    "E",  # All pycodestyle errors
+    "W",  # All pycodestyle warnings
+    "F",  # All pyflakes errors
+    "B",  # All flake8-bugbear checks
+    "D",  # All pydocstyle checks
+]
+extend-select = [
+    "E302", "E305",  # Expected blank lines (requires preview=true, above)
+]
+ignore = [
+    "B007", "B009", "B010", "B028", "B905",
+    "D1", "D203", "D205", "D212", "D400", "D401", "D415",
+    "E201", "E202", "E226", "E241", "E731",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*" = ["D"]
+
 [project.optional-dependencies]
 docs = [
     "sphinx",
@@ -57,12 +83,12 @@ tests = [
     "pandas",
     "pytest",
     "pytest-cov",
+    "pytest-html",
     "pytest-xdist",
 ]
 dev = [
     "nox",
-    "flake8",
-    "autopep8",
+    "ruff",
     "codespell",
     "genbadge[all]",
     "scikit-sundae[docs,tests]",

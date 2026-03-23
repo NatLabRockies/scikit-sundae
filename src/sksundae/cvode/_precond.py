@@ -92,7 +92,6 @@ class CVODEPrecond:
             cvode/Usage/index.html#preconditioner-solve-iterative-linear-solvers
 
         """
-
         if setupfn is None:
             pass
         elif not isinstance(setupfn, Callable):
