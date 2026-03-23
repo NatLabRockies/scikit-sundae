@@ -834,6 +834,9 @@ cdef class CVODE:
         # 17) Advance solution in time
         flag = CVode(self.mem, tt, self.yy, &tout, itask)
 
+        if PyErr_Occurred():
+            _pyerr_handler()
+
         svec2np(self.yy, yy_tmp)
 
         if flag == CV_ROOT_RETURN:
@@ -894,6 +897,9 @@ cdef class CVODE:
 
             flag = CVode(self.mem, tend, self.yy, &tt, CV_NORMAL)
 
+            if PyErr_Occurred():
+                _pyerr_handler()
+
             svec2np(self.yy, yy_tmp)
 
             if flag == CV_ROOT_RETURN:
@@ -913,9 +919,7 @@ cdef class CVODE:
 
                 ind += 1
 
-            if PyErr_Occurred():
-                _pyerr_handler()
-            elif stop:
+            if stop:
                 break
 
         if self.aux.eventsfn:
@@ -977,6 +981,9 @@ cdef class CVODE:
         while True:
             flag = CVode(self.mem, tend, self.yy, &tt, CV_ONE_STEP)
 
+            if PyErr_Occurred():
+                _pyerr_handler()
+
             svec2np(self.yy, yy_tmp)
 
             if flag == CV_ROOT_RETURN:
@@ -998,9 +1005,7 @@ cdef class CVODE:
 
                 ind += 1
 
-            if PyErr_Occurred():
-                _pyerr_handler()
-            elif stop:
+            if stop:
                 break
 
         if self.aux.eventsfn:

@@ -854,11 +854,15 @@ cdef class IDA:
 
         if calc_initcond:
             flag = IDACalcIC(self.mem, ic_opt, ic_t0)
-            if flag < 0:
+            if PyErr_Occurred():
+                _pyerr_handler()
+            elif flag < 0:
                 raise RuntimeError("IDACalcIC - " + IDAMESSAGES[flag])
 
             flag = IDAGetConsistentIC(self.mem, self.yy, self.yp)
-            if flag < 0:
+            if PyErr_Occurred():
+                _pyerr_handler()
+            elif flag < 0:
                 raise RuntimeError("IDAGetConsistentIC - " + IDAMESSAGES[flag])
 
         self._initialized = True
@@ -898,6 +902,9 @@ cdef class IDA:
         
         # 17) Advance solution in time
         flag = IDASolve(self.mem, tt, &tout, self.yy, self.yp, itask)
+
+        if PyErr_Occurred():
+            _pyerr_handler()
 
         svec2np(self.yy, yy_tmp)
         svec2np(self.yp, yp_tmp)
@@ -965,6 +972,9 @@ cdef class IDA:
 
             flag = IDASolve(self.mem, tend, &tt, self.yy, self.yp, IDA_NORMAL)
 
+            if PyErr_Occurred():
+                _pyerr_handler()
+
             svec2np(self.yy, yy_tmp)
             svec2np(self.yp, yp_tmp)
 
@@ -986,9 +996,7 @@ cdef class IDA:
 
                 ind += 1
 
-            if PyErr_Occurred():
-                _pyerr_handler()
-            elif stop:
+            if stop:
                 break
 
         if self.aux.eventsfn:
@@ -1055,6 +1063,9 @@ cdef class IDA:
         while True:
             flag = IDASolve(self.mem, tend, &tt, self.yy, self.yp, IDA_ONE_STEP)
 
+            if PyErr_Occurred():
+                _pyerr_handler()
+
             svec2np(self.yy, yy_tmp)
             svec2np(self.yp, yp_tmp)
 
@@ -1079,9 +1090,7 @@ cdef class IDA:
 
                 ind += 1
 
-            if PyErr_Occurred():
-                _pyerr_handler()
-            elif stop:
+            if stop:
                 break
 
         if self.aux.eventsfn:
