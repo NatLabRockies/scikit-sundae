@@ -7,12 +7,15 @@
 - Custom `__reduce__` methods, allowing solvers to be serialized ([#38](https://github.com/NatLabRockies/scikit-sundae/pull/38))
 
 ### Optimizations
+None.
 
 ### Bug Fixes
+- Address memory leak with raised exceptions caused by persisting solver/data objects ([#51](https://github.com/NatLabRockies/scikit-sundae/pull/51))
 - Fixes issue where `jacfn` is ignored when using `sparse` linear solver ([#48](https://github.com/NatLabRockies/scikit-sundae/pull/48))
 - Ensures exception propagations work correctly with numpy 2.4 release ([#41](https://github.com/NatLabRockies/scikit-sundae/pull/41))
 
 ### Breaking Changes
+None.
 
 ### Chores
 - Move to using `ruff` for linting and start tracking `Cython` addition issue ([#45](https://github.com/NatLabRockies/scikit-sundae/pull/45))
