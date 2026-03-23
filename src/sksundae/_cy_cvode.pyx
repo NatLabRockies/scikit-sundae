@@ -335,9 +335,7 @@ cdef class _cvLSSparseDQJac:
     """
     cdef void* mem
     cdef AuxData aux
-
     cdef object groups      # dict[int, np.ndarray[int]]
-    cdef object sparsity    # sparse.csc_matrix, shape(NEQ, NEQ)
 
     def __cinit__(self, AuxData aux):
 
@@ -351,7 +349,6 @@ cdef class _cvLSSparseDQJac:
             
         self.aux = aux
         self.groups = groups
-        self.sparsity = aux.sparsity
 
     def __call__(
         self,
@@ -368,7 +365,7 @@ cdef class _cvLSSparseDQJac:
         cdef np.ndarray[DTYPE_t, ndim=1] diff, inc, inc_inv, ytemp, yptemp
         
         aux = <AuxData> self.aux
-        sparsity = self.sparsity
+        sparsity = aux.sparsity
 
         ytemp = y.copy()
         yptemp = yp.copy()
