@@ -3,6 +3,14 @@
 # Dependencies
 cimport numpy as np
 
+from cpython.exc cimport (
+    PyObject, PyErr_Occurred, PyErr_Fetch, PyErr_Restore, 
+    # PyErr_GetRaisedException, PyErr_SetRaisedException,
+)
+
+# PyErr_Fetch and PyErr_Restore are deprecated at 3.12. When support for <3.12
+# is dropped, replace with PyErr_GetRaisedException/PyErr_SetRaisedException.
+
 # Extern cdef headers
 from .c_sundials cimport *  # Access to C types
 from .c_nvector cimport *  # Access to N_Vector functions
@@ -35,6 +43,35 @@ if SUNDIALS_INT_TYPE == "int":
     from numpy import int32 as INT_TYPE
 elif SUNDIALS_INT_TYPE == "long int":
     from numpy import int64 as INT_TYPE
+
+
+cdef _pyerr_handler():
+    """Catch and re-raise Python exceptions in Cython code."""
+    cdef PyObject *errtype, *errvalue, *errtraceback
+
+    PyErr_Fetch(&errtype, &errvalue, &errtraceback)
+    PyErr_Restore(errtype, errvalue, errtraceback)
+
+    # Update to the following when support for Python <3.12 is dropped:
+    # cdef PyObject *exc = PyErr_GetRaisedException()
+    # PyErr_SetRaisedException(exc)
+    # raise <object> exc
+
+    raise <object> errvalue
+
+
+cdef void _sunerr_handler(int line, const char* func, const char* file,
+                          const char* msg, int err_code, void* err_user_data,
+                          SUNContext ctx) except *:
+    """Custom error handler for shorter messages (no line or file)."""
+
+    if PyErr_Occurred():
+        pass
+
+    else:
+        decoded_func = func.decode("utf-8")
+        decoded_msg = msg.decode("utf-8").replace(", ,", ",").strip()
+        print(f"\n[{decoded_func}, Error: {err_code}] {decoded_msg}\n")
 
 
 cdef svec2np(N_Vector nvec, np.ndarray[DTYPE_t, ndim=1] np_array):
