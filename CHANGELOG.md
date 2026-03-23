@@ -1,5 +1,10 @@
 # scikit-SUNDAE Changelog
 
+## [v1.1.3](https://github.com/NatLabRockies/scikit-sundae/tree/v1.1.3)
+
+### Bug Fixes
+- Address memory leak with raised exceptions caused by persisting solver/data objects ([#50](https://github.com/NatLabRockies/scikit-sundae/pull/50))
+
 ## [v1.1.2](https://github.com/NatLabRockies/scikit-sundae/tree/v1.1.2)
 
 ### Bug Fixes
