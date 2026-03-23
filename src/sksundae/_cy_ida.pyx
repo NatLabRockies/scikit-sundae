@@ -370,13 +370,11 @@ cdef class _idaLSSparseDQJac:
     """
     cdef void* mem
     cdef AuxData aux
-
     cdef object groups      # dict[int, np.ndarray[int]]
-    cdef object sparsity    # csc_matrix, shape(NEQ, NEQ)
 
-    def __cinit__(self, AuxData aux, object sparsity):
+    def __cinit__(self, AuxData aux):
 
-        grouped_cols = group_columns(sparsity)
+        grouped_cols = group_columns(aux.sparsity)
         ngroups = np.max(grouped_cols) + 1
 
         groups = {}
@@ -386,7 +384,6 @@ cdef class _idaLSSparseDQJac:
         
         self.aux = aux
         self.groups = groups
-        self.sparsity = sparsity
 
     def __call__(
         self,
@@ -406,7 +403,7 @@ cdef class _idaLSSparseDQJac:
         cdef np.ndarray[DTYPE_t, ndim=1] ytemp, yptemp, rtemp
         
         aux = <AuxData> self.aux
-        sparsity = self.sparsity
+        sparsity = aux.sparsity
 
         ytemp = y.copy()
         yptemp = yp.copy()
@@ -461,14 +458,13 @@ cdef class _idaLSSparseDQJac:
             ytemp[cols] = y[cols]
             yptemp[cols] = yp[cols]
 
-    cdef _setup_memory(self, void* mem, sunindextype NEQ):
+    cdef _setup_memory(self, void* mem):
         """
         Store mem for access to current step size. Cannot be a part of cinit
         because void* types cannot be passed in from Python.
         
         """
         self.mem = mem
-        self.aux.jacfn = self
     
 
 class IDAResult(RichResult):
@@ -720,8 +716,10 @@ cdef class IDA:
 
         # 11) Set linear solver optional inputs
         if self.aux.jacfn is None and self.aux.sparsity is not None:
-            spjac = _idaLSSparseDQJac(self.aux, self.aux.sparsity)
-            spjac._setup_memory(self.mem, self.NEQ)
+            spjac = _idaLSSparseDQJac(self.aux)  # setup/store jacfn in AuxData
+            spjac._setup_memory(self.mem)  # pass mem to access time step info
+
+            self.aux.jacfn = spjac  # assign spjac as jacfn for use in wrapper
             
         if self.aux.jacfn:
             flag = IDASetJacFn(self.mem, _jacfn_wrapper)
@@ -1582,8 +1580,8 @@ def _check_options(options: dict) -> None:
 
     # preference between sparsity and jacfn
     if (sparsity is not None) and (jacfn is not None):
-        warn("Sparse Jacobian approximation will be ignored in favor of"
-             " 'jacfn'.")
+        warn("Custom sparse Jacobian approximation will be ignored in favor of"
+             " the user-defined 'jacfn'.")
 
     # precond
     precond = options["precond"]
