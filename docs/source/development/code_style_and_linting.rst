@@ -8,7 +8,7 @@ We adhere to `PEP8 <https://peps.python.org/pep-0008/>`_ with minimal exceptions
 
 Code Formatting
 ---------------
-While `black <https://black.readthedocs.io/en/stable/>`_ is a popular auto-formatting package, we do not permit it to be used for this codebase. Although it adheres to the same PEP8 standards that we follow, the `black` styling can be a bit more opinionated at times and does not always help improve clarity. For those still looking for auto-formatting, we permit the use of `autopep8 <https://github.com/hhatto/autopep8>`_ when paired with the `.flake8` configuration file found in `.github/linters`. IDEs supporting `autopep8` should be configured accordingly. Developers can also run the formatter manually using::
+While `black <https://black.readthedocs.io/en/stable/>`_ is a popular auto-formatting package, we do not permit it to be used for this codebase. Although it adheres to the same PEP8 standards that we follow, the `black` styling is more opinionated at times and does not always help improve clarity. For those still looking for auto-formatting, we permit the use of `autopep8 <https://github.com/hhatto/autopep8>`_ when paired with the `.flake8` configuration file found in `.github/linters`. IDEs supporting `autopep8` should be configured accordingly. Developers can also run the formatter manually using::
 
     nox -s linter -- format 
 

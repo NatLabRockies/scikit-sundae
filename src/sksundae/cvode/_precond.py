@@ -44,7 +44,7 @@ class CVODEPrecond:
         Any return values are ignored. Instead, the function should fill the
         pre-allocated memory for 'zvec' with the solution to the preconditioned
         problem `P*zvec = rvec`. Don't forget to use `[:]` to fill the array
-        rather than overwriting it. For example, `vec[:] = f(...)` is correct
+        rather than overwriting it. For example, `zvec[:] = f(...)` is correct
         whereas `zvec = f(...)` is not. The input `lr` is a flag specifying
         whether left (1) or right (2) preconditioning is being used. In cases
         where 'both' is selected for the preconditioning type, 'solvefn' will
