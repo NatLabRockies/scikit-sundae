@@ -17,13 +17,7 @@ cimport numpy as np
 
 from scipy import sparse as sp
 from scipy.optimize._numdiff import group_columns
-from cpython.exc cimport (
-    PyErr_Fetch, PyErr_NormalizeException,
-    PyObject, PyErr_CheckSignals, PyErr_Occurred,  # PyErr_GetRaisedException,
-)
-
-# PyErr_Fetch and PyErr_NormalizeException are deprecated at 3.12. When support
-# for <3.12 is dropped, replace with PyErr_GetRaisedException.
+from cpython.exc cimport PyErr_Occurred
 
 # Extern cdef headers
 from .c_cvode cimport *
@@ -96,7 +90,7 @@ LSMESSAGES = {
 
 
 cdef int _rhsfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
-                        void* data) except? -1:
+                        void* data) except -1:
     """Wraps 'rhsfn' by converting between N_Vector and ndarray types."""
 
     aux = <AuxData> data
@@ -114,7 +108,7 @@ cdef int _rhsfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
 
 
 cdef int _eventsfn_wrapper(sunrealtype t, N_Vector yy, sunrealtype* ee,
-                           void* data) except? -1:
+                           void* data) except -1:
     """Wraps 'eventsfn' by converting between N_Vector and ndarray types."""
 
     aux = <AuxData> data
@@ -133,7 +127,7 @@ cdef int _eventsfn_wrapper(sunrealtype t, N_Vector yy, sunrealtype* ee,
 
 cdef int _jacfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, SUNMatrix JJ,
                         void* data, N_Vector tmp1, N_Vector tmp2,
-                        N_Vector tmp3) except? -1:
+                        N_Vector tmp3) except -1:
     """Wraps 'jacfn' by converting between N_Vector and ndarray types."""
     
     aux = <AuxData> data
@@ -153,7 +147,7 @@ cdef int _jacfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, SUNMatrix JJ,
 
 cdef int _psetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
                          sunbooleantype jok, sunbooleantype* jcurPtr,
-                         sunrealtype gamma, void* data) except? -1:
+                         sunrealtype gamma, void* data) except -1:
     """Wraps 'psetup' by converting between N_Vector and ndarray types."""
     
     aux = <AuxData> data
@@ -176,7 +170,7 @@ cdef int _psetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
 
 cdef int _psolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rv,
                          N_Vector zv, sunrealtype gamma, sunrealtype delta,
-                         int lr, void* data) except? -1:
+                         int lr, void* data) except -1:
     """Wraps 'psolve' by converting between N_Vector and ndarray types."""
     
     aux = <AuxData> data
@@ -199,7 +193,7 @@ cdef int _psolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rv,
 
 
 cdef int _jvsetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
-                          void* data) except? -1:
+                          void* data) except -1:
     """Wraps 'jvsetup' by converting between N_Vector and ndarray types."""
     
     aux = <AuxData> data
@@ -217,7 +211,7 @@ cdef int _jvsetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
 
 
 cdef int _jvsolve_wrapper(N_Vector vv, N_Vector Jv, sunrealtype t, N_Vector yy,
-                          N_Vector yp, void* data, N_Vector tmp) except? -1:
+                          N_Vector yp, void* data, N_Vector tmp) except -1:
     """Wraps 'jvsolve' by converting between N_Vector and ndarray types."""
     
     aux = <AuxData> data
@@ -235,27 +229,6 @@ cdef int _jvsolve_wrapper(N_Vector vv, N_Vector Jv, sunrealtype t, N_Vector yy,
     np2svec(aux.np_Jv, Jv)
 
     return 0
-
-
-cdef void _err_handler(int line, const char* func, const char* file,
-                       const char* msg, int err_code, void* err_user_data,
-                       SUNContext ctx) except *:
-    """Custom error handler for shorter messages (no line or file)."""
-    cdef PyObject *errtype, *errvalue, *errtraceback
-
-    if PyErr_Occurred():
-        aux = <AuxData> err_user_data
-        # aux.pyerr = <object> PyErr_GetRaisedException()
-
-        PyErr_Fetch(&errtype, &errvalue, &errtraceback)
-        PyErr_NormalizeException(&errtype, &errvalue, &errtraceback)
-
-        aux.pyerr = <object> errvalue
-
-    else:
-        decoded_func = func.decode("utf-8")
-        decoded_msg = msg.decode("utf-8").replace(", ,", ",").strip()
-        print(f"\n[{decoded_func}, Error: {err_code}] {decoded_msg}\n")
 
 
 cdef class AuxData:
@@ -278,7 +251,6 @@ cdef class AuxData:
     cdef bint with_userdata
     cdef bint is_constrained
 
-    cdef object pyerr           # Exception
     cdef object rhsfn           # Callable
     cdef object userdata        # Any
     cdef object eventsfn        # Callable
@@ -289,7 +261,6 @@ cdef class AuxData:
     cdef object jactimes        # CVODEJacTimes
 
     def __cinit__(self, sunindextype NEQ, object options):
-        self.pyerr = None
         self.np_yy = np.empty(NEQ, DTYPE)
         self.np_yp = np.empty(NEQ, DTYPE)
         
@@ -453,6 +424,9 @@ cdef class _cvLSSparseDQJac:
         
         """
         self.mem = mem
+
+    def __dealloc__(self):
+        self.mem = NULL
 
 
 class CVODEResult(RichResult):
@@ -756,7 +730,7 @@ cdef class CVODE:
 
         # 16) Set optional inputs
         SUNContext_ClearErrHandlers(self.ctx)
-        SUNContext_PushErrHandler(self.ctx, _err_handler, <void*> self.aux)
+        SUNContext_PushErrHandler(self.ctx, _sunerr_handler, NULL)
 
         cdef sunrealtype first_step = <sunrealtype> self._options["first_step"] 
         flag = CVodeSetInitStep(self.mem, first_step)
@@ -884,9 +858,11 @@ cdef class CVODE:
 
         return result
 
-    cdef _normal_solve(self, np.ndarray[DTYPE_t, ndim=1] tspan,
-                             np.ndarray[DTYPE_t, ndim=1] y0,
-        ):
+    cdef _normal_solve(
+        self,
+        np.ndarray[DTYPE_t, ndim=1] tspan,
+        np.ndarray[DTYPE_t, ndim=1] y0,
+    ):
 
         cdef int ind
         cdef int flag
@@ -937,10 +913,8 @@ cdef class CVODE:
 
                 ind += 1
 
-            if self.aux.pyerr is not None:
-                raise self.aux.pyerr
-            elif PyErr_CheckSignals() == -1:
-                return
+            if PyErr_Occurred():
+                _pyerr_handler()
             elif stop:
                 break
 
@@ -963,9 +937,11 @@ cdef class CVODE:
 
         return result
 
-    cdef _onestep_solve(self, np.ndarray[DTYPE_t, ndim=1] tspan,
-                              np.ndarray[DTYPE_t, ndim=1] y0,
-        ):
+    cdef _onestep_solve(
+        self,
+        np.ndarray[DTYPE_t, ndim=1] tspan,
+        np.ndarray[DTYPE_t, ndim=1] y0,
+    ):
 
         cdef int ind
         cdef int flag
@@ -1022,10 +998,8 @@ cdef class CVODE:
 
                 ind += 1
 
-            if self.aux.pyerr is not None:
-                raise self.aux.pyerr
-            elif PyErr_CheckSignals() == -1:
-                return
+            if PyErr_Occurred():
+                _pyerr_handler()
             elif stop:
                 break
 
