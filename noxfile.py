@@ -21,7 +21,7 @@ def run_cleanup(_) -> None:
 @nox.session(name='linter', python=False)
 def run_ruff(session: nox.Session) -> None:
     """
-    Run ruff to check for linting errors.
+    Run ruff to check for linting errors
 
     Use the optional 'format' or 'format-unsafe' arguments to run ruff with the
     --fix or --unsafe-fixes option prior to the linter. You can also use 'stats'

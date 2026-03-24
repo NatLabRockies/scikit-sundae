@@ -62,7 +62,7 @@ Switching between SUNDIALS direct linear solvers in scikit-SUNDAE is straightfor
     U = 0  # upper bandwidth
     solver = CVODE(rhsfn, linsolver='band', lband=L, uband=U)
 
-Ensure you provide both the lower bandwidth `lband` and upper bandwidth `uband` when using the `band` linear solver. Each bandwidth defines the LARGEST distance between a non-zero element and the main diagonal, on either side, as shown in the figure below. Forgetting to set either bandwidth will raise an error. If `lband + uband` matches the dimension `N` of the matrix, the performance of the `band` and `dense` linear solvers will be approximately the same.
+Ensure you provide both the lower bandwidth `lband` and upper bandwidth `uband` when using the `band` linear solver. Each bandwidth defines the LARGEST distance between a non-zero element and the main diagonal, on either side, as shown in the figure below. Forgetting to set either bandwidth will raise an error. If `lband + uband + 1` matches the dimension `N` of the matrix, the performance of the `band` and `dense` linear solvers will be approximately the same.
 
 .. figure:: figures/banded_jacobian.png 
    :width: 50% 

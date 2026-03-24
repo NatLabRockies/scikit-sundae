@@ -6,8 +6,8 @@ from .c_sundials cimport *
 cdef extern from "ida/ida.h":
 
     # user-supplied functions
-    ctypedef int (*IDAResFn)(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr, void* data) except? -1
-    ctypedef int (*IDARootFn)(sunrealtype t, N_Vector yy, N_Vector yp, sunrealtype* ee, void* data) except? -1
+    ctypedef int (*IDAResFn)(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr, void* data) except -1
+    ctypedef int (*IDARootFn)(sunrealtype t, N_Vector yy, N_Vector yp, sunrealtype* ee, void* data) except -1
 
     # itask
     int IDA_NORMAL
@@ -75,23 +75,23 @@ cdef extern from "ida/ida_ls.h":
     # user-supplied functions
     ctypedef int (*IDALsJacFn)(
         sunrealtype t, sunrealtype cj, N_Vector yy, N_Vector yp, N_Vector rr,
-        SUNMatrix JJ, void* data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) except? -1
+        SUNMatrix JJ, void* data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) except -1
 
     ctypedef int (*IDALsPrecSetupFn)(
         sunrealtype tt, N_Vector yy, N_Vector yp, N_Vector rr, sunrealtype cj,
-        void* data) except? -1
+        void* data) except -1
 
     ctypedef int (*IDALsPrecSolveFn)(
         sunrealtype tt, N_Vector yy, N_Vector yp, N_Vector rr, N_Vector rv,
-        N_Vector zv, sunrealtype cj, sunrealtype delta, void* data) except? -1
+        N_Vector zv, sunrealtype cj, sunrealtype delta, void* data) except -1
 
     ctypedef int (*IDALsJacTimesSetupFn)(
         sunrealtype tt, N_Vector yy, N_Vector yp, N_Vector rr, sunrealtype cj,
-        void* data) except? -1
+        void* data) except -1
 
     ctypedef int (*IDALsJacTimesVecFn)(
         sunrealtype tt, N_Vector yy, N_Vector yp, N_Vector rr, N_Vector vv, N_Vector Jv,
-        sunrealtype cj, void* data, N_Vector tmp1, N_Vector tmp2) except? -1
+        sunrealtype cj, void* data, N_Vector tmp1, N_Vector tmp2) except -1
 
     # exported functions
     int IDASetLinearSolver(void* mem, SUNLinearSolver LS, SUNMatrix A)
