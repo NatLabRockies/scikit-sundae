@@ -17,13 +17,7 @@ cimport numpy as np
 
 from scipy import sparse as sp
 from scipy.optimize._numdiff import group_columns
-from cpython.exc cimport (
-    PyErr_Fetch, PyErr_NormalizeException,
-    PyObject, PyErr_CheckSignals, PyErr_Occurred,  # PyErr_GetRaisedException,
-)
-
-# PyErr_Fetch and PyErr_NormalizeException are deprecated at 3.12. When support
-# for <3.12 is dropped, replace with PyErr_GetRaisedException.
+from cpython.exc cimport PyErr_Occurred
 
 # Extern cdef headers
 from .c_ida cimport *
@@ -94,7 +88,7 @@ LSMESSAGES = {
 
 
 cdef int _resfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
-                        void* data) except? -1:
+                        void* data) except -1:
     """Wraps 'resfn' by converting between N_Vector and ndarray types."""
 
     aux = <AuxData> data
@@ -113,7 +107,7 @@ cdef int _resfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
 
 
 cdef int _eventsfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
-                           sunrealtype* ee, void* data) except? -1:
+                           sunrealtype* ee, void* data) except -1:
     """Wraps 'eventsfn' by converting between N_Vector and ndarray types."""
 
     aux = <AuxData> data
@@ -133,7 +127,7 @@ cdef int _eventsfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
 
 cdef int _jacfn_wrapper(sunrealtype t, sunrealtype cj, N_Vector yy, N_Vector yp,
                         N_Vector rr, SUNMatrix JJ, void* data, N_Vector tmp1,
-                        N_Vector tmp2, N_Vector tmp3) except? -1:
+                        N_Vector tmp2, N_Vector tmp3) except -1:
     """Wraps 'jacfn' by converting between N_Vector and ndarray types."""
     
     aux = <AuxData> data
@@ -154,7 +148,7 @@ cdef int _jacfn_wrapper(sunrealtype t, sunrealtype cj, N_Vector yy, N_Vector yp,
 
 
 cdef int _psetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
-                         sunrealtype cj, void* data) except? -1:
+                         sunrealtype cj, void* data) except -1:
     """Wraps 'psetup' by converting between N_Vector and ndarray types."""
     
     aux = <AuxData> data
@@ -174,7 +168,7 @@ cdef int _psetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
 
 cdef int _psolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
                          N_Vector rv, N_Vector zv, sunrealtype cj,
-                         sunrealtype delta, void* data) except? -1:
+                         sunrealtype delta, void* data) except -1:
     """Wraps 'psolve' by converting between N_Vector and ndarray types."""
     
     aux = <AuxData> data
@@ -198,7 +192,7 @@ cdef int _psolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
 
 
 cdef int _jvsetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
-                          sunrealtype cj, void* data) except? -1:
+                          sunrealtype cj, void* data) except -1:
     """Wraps 'jvsolve' by converting between N_Vector and ndarray types."""
     
     aux = <AuxData> data
@@ -218,7 +212,7 @@ cdef int _jvsetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
 
 cdef int _jvsolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
                           N_Vector vv, N_Vector Jv, sunrealtype cj, void* data,
-                          N_Vector tmp1, N_Vector tmp2) except? -1:
+                          N_Vector tmp1, N_Vector tmp2) except -1:
     """Wraps 'jvsolve' by converting between N_Vector and ndarray types."""
     
     aux = <AuxData> data
@@ -239,27 +233,6 @@ cdef int _jvsolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
     np2svec(aux.np_Jv, Jv)
 
     return 0
-
-
-cdef void _err_handler(int line, const char* func, const char* file,
-                       const char* msg, int err_code, void* err_user_data,
-                       SUNContext ctx) except *:
-    """Custom error handler for shorter messages (no line or file)."""
-    cdef PyObject *errtype, *errvalue, *errtraceback
-
-    if PyErr_Occurred():
-        aux = <AuxData> err_user_data
-        # aux.pyerr = <object> PyErr_GetRaisedException()
-
-        PyErr_Fetch(&errtype, &errvalue, &errtraceback)
-        PyErr_NormalizeException(&errtype, &errvalue, &errtraceback)
-
-        aux.pyerr = <object> errvalue
-
-    else:
-        decoded_func = func.decode("utf-8")
-        decoded_msg = msg.decode("utf-8").replace(", ,", ",").strip()
-        print(f"\n[{decoded_func}, Error: {err_code}] {decoded_msg}\n")
 
 
 cdef class AuxData:
@@ -283,7 +256,6 @@ cdef class AuxData:
     cdef bint with_userdata
     cdef bint is_constrained
 
-    cdef object pyerr           # Exception
     cdef object resfn           # Callable
     cdef object userdata        # Any
     cdef object eventsfn        # Callable
@@ -294,7 +266,6 @@ cdef class AuxData:
     cdef object jactimes        # IDAJacTimes
 
     def __cinit__(self, sunindextype NEQ, object options):
-        self.pyerr = None
         self.np_yy = np.empty(NEQ, DTYPE)
         self.np_yp = np.empty(NEQ, DTYPE)
         self.np_rr = np.empty(NEQ, DTYPE)
@@ -370,13 +341,11 @@ cdef class _idaLSSparseDQJac:
     """
     cdef void* mem
     cdef AuxData aux
-
     cdef object groups      # dict[int, np.ndarray[int]]
-    cdef object sparsity    # csc_matrix, shape(NEQ, NEQ)
 
-    def __cinit__(self, AuxData aux, object sparsity):
+    def __cinit__(self, AuxData aux):
 
-        grouped_cols = group_columns(sparsity)
+        grouped_cols = group_columns(aux.sparsity)
         ngroups = np.max(grouped_cols) + 1
 
         groups = {}
@@ -386,7 +355,6 @@ cdef class _idaLSSparseDQJac:
         
         self.aux = aux
         self.groups = groups
-        self.sparsity = sparsity
 
     def __call__(
         self,
@@ -406,7 +374,7 @@ cdef class _idaLSSparseDQJac:
         cdef np.ndarray[DTYPE_t, ndim=1] ytemp, yptemp, rtemp
         
         aux = <AuxData> self.aux
-        sparsity = self.sparsity
+        sparsity = aux.sparsity
 
         ytemp = y.copy()
         yptemp = yp.copy()
@@ -461,14 +429,17 @@ cdef class _idaLSSparseDQJac:
             ytemp[cols] = y[cols]
             yptemp[cols] = yp[cols]
 
-    cdef _setup_memory(self, void* mem, sunindextype NEQ):
+    cdef _setup_memory(self, void* mem):
         """
         Store mem for access to current step size. Cannot be a part of cinit
         because void* types cannot be passed in from Python.
         
         """
         self.mem = mem
-        self.aux.jacfn = self
+
+
+    def __dealloc__(self):
+        self.mem = NULL
     
 
 class IDAResult(RichResult):
@@ -720,8 +691,10 @@ cdef class IDA:
 
         # 11) Set linear solver optional inputs
         if self.aux.jacfn is None and self.aux.sparsity is not None:
-            spjac = _idaLSSparseDQJac(self.aux, self.aux.sparsity)
-            spjac._setup_memory(self.mem, self.NEQ)
+            spjac = _idaLSSparseDQJac(self.aux)  # setup/store jacfn in AuxData
+            spjac._setup_memory(self.mem)  # pass mem to access time step info
+
+            self.aux.jacfn = spjac  # assign spjac as jacfn for use in wrapper
             
         if self.aux.jacfn:
             flag = IDASetJacFn(self.mem, _jacfn_wrapper)
@@ -779,7 +752,7 @@ cdef class IDA:
 
         # 15) Set optional inputs
         SUNContext_ClearErrHandlers(self.ctx)
-        SUNContext_PushErrHandler(self.ctx, _err_handler, <void*> self.aux)
+        SUNContext_PushErrHandler(self.ctx, _sunerr_handler, NULL)
 
         # Set algebraic variable indices
 
@@ -879,11 +852,15 @@ cdef class IDA:
 
         if calc_initcond:
             flag = IDACalcIC(self.mem, ic_opt, ic_t0)
-            if flag < 0:
+            if PyErr_Occurred():
+                _pyerr_handler()
+            elif flag < 0:
                 raise RuntimeError("IDACalcIC - " + IDAMESSAGES[flag])
 
             flag = IDAGetConsistentIC(self.mem, self.yy, self.yp)
-            if flag < 0:
+            if PyErr_Occurred():
+                _pyerr_handler()
+            elif flag < 0:
                 raise RuntimeError("IDAGetConsistentIC - " + IDAMESSAGES[flag])
 
         self._initialized = True
@@ -924,6 +901,9 @@ cdef class IDA:
         # 17) Advance solution in time
         flag = IDASolve(self.mem, tt, &tout, self.yy, self.yp, itask)
 
+        if PyErr_Occurred():
+            _pyerr_handler()
+
         svec2np(self.yy, yy_tmp)
         svec2np(self.yp, yp_tmp)
 
@@ -950,10 +930,12 @@ cdef class IDA:
 
         return result
 
-    cdef _normal_solve(self, np.ndarray[DTYPE_t, ndim=1] tspan,
-                             np.ndarray[DTYPE_t, ndim=1] y0,
-                             np.ndarray[DTYPE_t, ndim=1] yp0
-        ):
+    cdef _normal_solve(
+        self,
+        np.ndarray[DTYPE_t, ndim=1] tspan,
+        np.ndarray[DTYPE_t, ndim=1] y0,
+        np.ndarray[DTYPE_t, ndim=1] yp0,
+    ):
 
         cdef int ind
         cdef int flag
@@ -988,6 +970,9 @@ cdef class IDA:
 
             flag = IDASolve(self.mem, tend, &tt, self.yy, self.yp, IDA_NORMAL)
 
+            if PyErr_Occurred():
+                _pyerr_handler()
+
             svec2np(self.yy, yy_tmp)
             svec2np(self.yp, yp_tmp)
 
@@ -1009,11 +994,7 @@ cdef class IDA:
 
                 ind += 1
 
-            if self.aux.pyerr is not None:
-                raise self.aux.pyerr
-            elif PyErr_CheckSignals() == -1:
-                return
-            elif stop:
+            if stop:
                 break
 
         if self.aux.eventsfn:
@@ -1036,10 +1017,12 @@ cdef class IDA:
 
         return result
 
-    cdef _onestep_solve(self, np.ndarray[DTYPE_t, ndim=1] tspan,
-                              np.ndarray[DTYPE_t, ndim=1] y0,
-                              np.ndarray[DTYPE_t, ndim=1] yp0
-        ):
+    cdef _onestep_solve(
+        self, 
+        np.ndarray[DTYPE_t, ndim=1] tspan,
+        np.ndarray[DTYPE_t, ndim=1] y0,
+        np.ndarray[DTYPE_t, ndim=1] yp0,
+    ):
 
         cdef int ind
         cdef int flag
@@ -1078,6 +1061,9 @@ cdef class IDA:
         while True:
             flag = IDASolve(self.mem, tend, &tt, self.yy, self.yp, IDA_ONE_STEP)
 
+            if PyErr_Occurred():
+                _pyerr_handler()
+
             svec2np(self.yy, yy_tmp)
             svec2np(self.yp, yp_tmp)
 
@@ -1102,11 +1088,7 @@ cdef class IDA:
 
                 ind += 1
 
-            if self.aux.pyerr is not None:
-                raise self.aux.pyerr
-            elif PyErr_CheckSignals() == -1:
-                return
-            elif stop:
+            if stop:
                 break
 
         if self.aux.eventsfn:
@@ -1582,8 +1564,8 @@ def _check_options(options: dict) -> None:
 
     # preference between sparsity and jacfn
     if (sparsity is not None) and (jacfn is not None):
-        warn("Sparse Jacobian approximation will be ignored in favor of"
-             " 'jacfn'.")
+        warn("Custom sparse Jacobian approximation will be ignored in favor of"
+             " the user-defined 'jacfn'.")
 
     # precond
     precond = options["precond"]

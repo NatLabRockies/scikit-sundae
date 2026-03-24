@@ -6,8 +6,8 @@ from .c_sundials cimport *  # Access to types
 cdef extern from "cvode/cvode.h":
 
     # user-supplied functions
-    ctypedef int (*CVRhsFn)(sunrealtype t, N_Vector yy, N_Vector yp, void* data) except? -1
-    ctypedef int (*CVRootFn)(sunrealtype t, N_Vector yy, sunrealtype* ee, void* data) except? -1
+    ctypedef int (*CVRhsFn)(sunrealtype t, N_Vector yy, N_Vector yp, void* data) except -1
+    ctypedef int (*CVRootFn)(sunrealtype t, N_Vector yy, sunrealtype* ee, void* data) except -1
 
     # imethod
     int CV_ADAMS
@@ -69,22 +69,22 @@ cdef extern from "cvode/cvode_ls.h":
     # user-supplied functions
     ctypedef int (*CVLsJacFn)(
         sunrealtype tt, N_Vector yy, N_Vector yp, SUNMatrix JJ, void* data,
-        N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) except? -1
+        N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) except -1
 
     ctypedef int (*CVLsPrecSetupFn)(
         sunrealtype tt, N_Vector yy, N_Vector yp, sunbooleantype jok, sunbooleantype* jcurPtr,
-        sunrealtype gamma, void* data) except? -1
+        sunrealtype gamma, void* data) except -1
 
     ctypedef int (*CVLsPrecSolveFn)(
         sunrealtype tt, N_Vector yy, N_Vector yp, N_Vector rv, N_Vector zv, sunrealtype gamma,
-        sunrealtype delta, int lr, void* data) except? -1
+        sunrealtype delta, int lr, void* data) except -1
 
     ctypedef int (*CVLsJacTimesSetupFn)(
-        sunrealtype tt, N_Vector yy, N_Vector yp, void* data) except? -1
+        sunrealtype tt, N_Vector yy, N_Vector yp, void* data) except -1
 
     ctypedef int (*CVLsJacTimesVecFn)(
         N_Vector vv, N_Vector Jv, sunrealtype tt, N_Vector yy, N_Vector yp, void* data,
-        N_Vector tmp) except? -1
+        N_Vector tmp) except -1
 
     # exported functions
     int CVodeSetLinearSolver(void* mem, SUNLinearSolver LS, SUNMatrix A)

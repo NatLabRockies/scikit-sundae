@@ -50,7 +50,6 @@ class IDAJacTimes:
         'resfn' -> 'setupfn' -> 'solvefn' for each integration step.
 
         """
-
         if setupfn is None:
             pass
         elif not isinstance(setupfn, Callable):

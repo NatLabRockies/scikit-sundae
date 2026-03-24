@@ -14,7 +14,7 @@ class IDA:
 
     def __init__(self, resfn: Callable, **options) -> None:
         """
-        This class wraps the implicit differential algebraic (IDA) solver from
+        A class to wrap the implicit differential algebraic (IDA) solver from
         SUNDIALS [1]_ [2]_. IDA solves both ordinary differential equations
         (ODEs) and differiential agebraic equations (DAEs).
 
@@ -104,7 +104,7 @@ class IDA:
             If 'constraints_idx' is not None, then this option must include an
             array of equal length specifying the types of constraints to apply.
             Values should be in `{-2, -1, 1, 2}` which apply `y[i] < 0`,
-            `y[i] <= 0`, `y[i] >=0`, and `y[i] > 0`, respectively. The
+            `y[i] <= 0`, `y[i] >= 0`, and `y[i] > 0`, respectively. The
             default is None.
         eventsfn : Callable or None, optional
             Events function with signature `g(t, y, yp, events[, userdata])`.
@@ -129,7 +129,7 @@ class IDA:
             Number of events to track. The default is 0.
         jacfn : Callable or None, optional
             Jacobian function like `J(t, y, yp, res, cj, JJ[, userdata])`.
-            The function should fill the pre-allocated 2D matrix 'JJ' with the
+            The function should fill the pre-allocated memory for `JJ` with the
             values defined by `JJ[i,j] = dres_i/dy_j + cj*dres_i/dyp_j`. An
             internal finite difference method is applied when None (default).
             Note that the template for `JJ` is determined by the linear solver

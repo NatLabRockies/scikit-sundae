@@ -14,7 +14,7 @@ class CVODE:
 
     def __init__(self, rhsfn: Callable, **options) -> None:
         """
-        This class wraps the C-based variable-coefficient ordinary differential
+        A class to wrap the C-based variable-coefficient ordinary differential
         equations (CVODE) solver from SUNDIALS [1]_ [2]_.
 
         Parameters
@@ -98,7 +98,7 @@ class CVODE:
             If 'constraints_idx' is not None, then this option must include an
             array of equal length specifying the types of constraints to apply.
             Values should be in `{-2, -1, 1, 2}` which apply `y[i] < 0`,
-            `y[i] <= 0`, `y[i] >=0`, and `y[i] > 0`, respectively. The
+            `y[i] <= 0`, `y[i] >= 0`, and `y[i] > 0`, respectively. The
             default is None.
         eventsfn : Callable or None, optional
             Events function with signature `g(t, y, events[, userdata])`.
@@ -123,7 +123,7 @@ class CVODE:
             Number of events to track. The default is 0.
         jacfn : Callable or None, optional
             Jacobian function like `J(t, y, yp, JJ[, userdata])`. Fills the
-            pre-allocated 2D matrix 'JJ' with values defined by the Jacobian
+            pre-allocated memory for `JJ` with values defined by the Jacobian
             `JJ[i,j] = dyp_i/dy_j`. An internal finite difference method is
             applied when None (default). Note that the template for `JJ` is
             determined by the linear solver choice: a 1D array for 'sparse' or
