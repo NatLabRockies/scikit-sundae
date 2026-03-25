@@ -88,7 +88,7 @@ def check_against_tag(tag: str, local: str) -> None:
     Parameters
     ----------
     tag : str
-        Semmantically versioned tag.
+        Semantically versioned tag.
     local : str
         Local package version.
 

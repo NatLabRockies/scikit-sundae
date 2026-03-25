@@ -63,7 +63,7 @@ jobs:
         with:
           python-version: "3.14"
 
-      - name: Check version details agasint PyPI, tag, etc.
+      - name: Check version details against PyPI, tag, etc.
         run: |
           TAG_VERSION=${{ needs.details.outputs.tag_version }}
           LOCAL_VERSION=${{ needs.details.outputs.local_version }}
