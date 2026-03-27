@@ -29,11 +29,11 @@ html[data-theme=dark] .ondark {
 }
 
 html[data-theme=dark] .onlight {
-  display: None;
+  display: none;
 }
 
 html[data-theme=light] .ondark {
-  display: None;
+  display: none;
 }
 
 html[data-theme=light] .onlight {
