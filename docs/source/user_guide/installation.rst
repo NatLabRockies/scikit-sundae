@@ -106,6 +106,7 @@ In all cases where you are trying to install from the source distribution, you s
 ====================== ==============================
 scikit-SUNDAE Version  Supported SUNDIALS Version(s)
 ====================== ==============================
+1.2.x [dev]             >=7.6, <7.8
 1.1.x                   >=7.3, <7.6
 1.0.x                   >=7.0, <7.3
 ====================== ==============================
