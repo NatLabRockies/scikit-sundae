@@ -2,5 +2,5 @@ name: sun
 channels:
   - conda-forge
 dependencies:
-  - sundials=7.6
+  - sundials=7.7
   - libblas=*=*openblas

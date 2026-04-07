@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python=3.14
-  - sundials=7.6
+  - sundials=7.7
   - libblas=*=*openblas
   - pip:
     - ../.[docs]
