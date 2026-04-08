@@ -68,7 +68,7 @@ If you are not installing from the binary releases, then you may run into an err
 
     FileNotFoundError("Can't find SUNDIALS installation in default search paths.")
 
-This means that your SUNDIALS installation is not in an expected location, i.e., `$CONDA_PREFIX` or `%CONDA_PREFIX%\Library`. In this case, you will need to search through your drive(s) to determine where SUNDIALS is installed. After locating the parent directory for your SUNDIALS installation, set the `SUNDIALS_PREFIX` environment variable. On Linux-like systems, use::
+This means that your SUNDIALS installation is not in an expected location, i.e., `$CONDA_PREFIX` or `%CONDA_PREFIX%\\Library`. In this case, you will need to search through your drive(s) to determine where SUNDIALS is installed. After locating the parent directory for your SUNDIALS installation, set the `SUNDIALS_PREFIX` environment variable. On Linux-like systems, use::
 
     export SUNDIALS_PREFIX="..."
 
@@ -76,7 +76,7 @@ Alternative, if you are on a Windows machine, use::
 
     set SUNDIALS_PREFIX="..."
 
-The parent directory should have both the `include` and `lib` folders from the SUNDIALS installations. For example if both `C:\SUNDIALS\include` and `C:\SUNDIALS\lib` are on your computer, then your parent directory is `C:\SUNDIALS`. After setting the environment variable, try your installation again.
+The parent directory should have both the `include` and `lib` folders from the SUNDIALS installations. For example if both `C:\\SUNDIALS\\include` and `C:\\SUNDIALS\\lib` are on your computer, then your parent directory is `C:\\SUNDIALS`. After setting the environment variable, try your installation again.
 
 Missing Binaries
 ^^^^^^^^^^^^^^^^

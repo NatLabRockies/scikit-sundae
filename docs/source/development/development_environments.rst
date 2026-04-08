@@ -25,7 +25,7 @@ This guide will walk you through setting up a local development environment for 
     On occasion, you may need to work with older Python and/or SUNDIALS versions (e.g., patching old versions, or resolving version-specific CI failures). In cases where you are not working with the latest version of scikit-SUNDAE, please reference the table on the main :doc:`/user_guide/installation` page to verify SUNDIALS compatibilities.
 
 3. Set the `SUNDIALS_PREFIX` environment variable
-    scikit-SUNDAE expects your SUNDIALS installation to be in either `$CONDA_PREFIX` or `%CONDA_PREFIX%\Library`. Check to see if your installation is in either of these directories. If it isn't, you will need to set the `SUNDIALS_PREFIX` environment variable::
+    scikit-SUNDAE expects your SUNDIALS installation to be in either `$CONDA_PREFIX` or `%CONDA_PREFIX%\\Library`. Check to see if your installation is in either of these directories. If it isn't, you will need to set the `SUNDIALS_PREFIX` environment variable::
 
         set SUNDIALS_PREFIX="..."         (on Windows)
         export SUNDIALS_PREFIX="..."      (on MacOS or Linux)
