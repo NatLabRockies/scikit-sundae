@@ -6,10 +6,8 @@
 [![ci](https://github.com/NatLabRockies/scikit-sundae/actions/workflows/ci.yml/badge.svg)](https://github.com/NatLabRockies/scikit-sundae/actions/workflows/ci.yml) &nbsp;
 [![license](https://img.shields.io/badge/license-BSD--3-blue.svg)](https://github.com/NatLabRockies/scikit-sundae/blob/main/LICENSE) &nbsp;
 ![coverage](https://github.com/NatLabRockies/scikit-sundae/blob/main/images/coverage.svg?raw=true) <br>
-[![conda](https://img.shields.io/conda/vn/conda-forge/scikit-sundae)
-](https://anaconda.org/channels/conda-forge/packages/scikit-sundae/overview) &nbsp;
-[![conda-downloads](https://img.shields.io/conda/d/conda-forge/scikit-sundae)
-](https://anaconda.org/conda-forge/scikit-sundae) &nbsp;
+[![conda](https://img.shields.io/conda/vn/conda-forge/scikit-sundae)](https://anaconda.org/channels/conda-forge/packages/scikit-sundae/overview) &nbsp;
+[![conda-downloads](https://img.shields.io/conda/d/conda-forge/scikit-sundae)](https://anaconda.org/conda-forge/scikit-sundae) &nbsp;
 [![pypi](https://img.shields.io/pypi/v/scikit-sundae)](https://pypi.org/project/scikit-sundae) &nbsp;
 [![pypi-downloads](https://static.pepy.tech/personalized-badge/scikit-sundae?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=BRIGHTGREEN&left_text=pypi|downloads)](https://pepy.tech/projects/scikit-sundae)
 
