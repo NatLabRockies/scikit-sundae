@@ -1,2 +1,2 @@
 [codespell]
-skip = build,docs,images,reports,*.c,*.so,*.pyd
+skip = build,docs,images,reports,inprogress,*.c,*.so,*.pyd
