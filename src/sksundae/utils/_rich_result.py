@@ -1,8 +1,4 @@
-"""General-purpose module for shared utilities across the package."""
-
 import numpy as np
-
-__all__ = ['RichResult',]
 
 
 # RichResult and its formatters are modified copies from scipy._lib._util

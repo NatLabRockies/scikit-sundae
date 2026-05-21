@@ -1,7 +1,8 @@
 import numpy as np
 import sksundae as sun
 
-from sksundae.utils import RichResult, _format_float_10
+from sksundae.utils import RichResult
+from sksundae.utils._rich_result import _format_float_10
 
 
 def test_expected_config():
