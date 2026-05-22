@@ -1,8 +1,4 @@
-"""General-purpose module for shared utilities across the package."""
-
 import numpy as np
-
-__all__ = ['RichResult',]
 
 
 # RichResult and its formatters are modified copies from scipy._lib._util
@@ -40,9 +36,7 @@ class RichResult:
 
         .. code-block:: python
 
-            import sksundae as sun
-
-            class CustomResult(sun.utils.RichResult):
+            class CustomResult(RichResult):
                 _order_keys = ['first', 'second', 'third',]
 
             result = CustomResult(second=None, last=None, first=None)
@@ -55,8 +49,6 @@ class RichResult:
         .. code-block:: python
 
             import numpy as np
-
-            from sksundae.utils import RichResult
 
             t = np.linspace(0, 1, 1000)
             y = np.random.rand(1000, 5)
@@ -71,8 +63,6 @@ class RichResult:
         attributes.
 
         .. code-block:: python
-
-            from sksundae.utils import RichResult
 
             result = RichResult(a=10, b=20, c=30)
 
