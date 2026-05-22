@@ -46,8 +46,6 @@ class Timer:
 
             import time
 
-            from sksundae.utils import Timer
-
             def function(sleep_time: float) -> None:
                 time.sleep(sleep_time)
 

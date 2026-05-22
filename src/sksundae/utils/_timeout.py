@@ -22,8 +22,10 @@ class Timeout:
         raise_exc: bool = True,
     ) -> None:
         """
-        Tracks the time spent in a context block and raises a `TimeoutError` if
-        the time exceed a given number of seconds.
+        Uses a thread to track the time spent in a context block and forces an
+        exit (and optionally raises a `TimeoutError`) if the execution time
+        exceeds a given number of seconds. See the notes for important details
+        on edge cases where this may not work as expected.
 
         Parameters
         ----------
@@ -31,6 +33,20 @@ class Timeout:
             Number of seconds before timing out.
         name : str, optional
             Name to identify the block in exit messages, by default 'Timeout'.
+        raise_exc : bool, optional
+            If True, raise a `TimeoutError` on exit when the given time limit is
+            exceeded. Use False to handle the timeout manually.
+
+        Notes
+        -----
+        The `KeyboardInterrupt` that is used to force the exit of the main
+        thread may not be immediate, depending on the state of the main thread.
+        For example, if you are running `time.sleep`, the interruption will not
+        be raised until the sleep is complete.
+
+        If you are using extensions that are not written in pure Python, the
+        interruption may not be raised at all, depending on how that extension
+        was written to catch and handle exceptions.
 
         Examples
         --------
@@ -39,8 +55,6 @@ class Timeout:
         time to complete the `slow_fibonacci` function.
 
         .. code-block:: python
-
-            from sksundae.utils import Timer, Timeout
 
             def slow_fibonacci(n):
                 if n < 2:
@@ -57,7 +71,7 @@ class Timeout:
                 result = slow_fibonacci(30)
 
         By default, the context manager will raise an exception if the context
-        block exceed the set time limit. If you want to suppress this behavior,
+        block exceeds the set time limit. If you want to suppress this behavior,
         and handle it manually you can do so using `raise_exc=False`.
 
         .. code-block:: python
@@ -85,9 +99,10 @@ class Timeout:
                         print('User interrupt.')  # or raise to stop execution
 
         While demonstrated with a standin function for the Fibonacci sequence,
-        this context manager can be used with any block and can help prevent
-        long-running integrations with the `scikit-sundae` solvers. Note that
-        the `Timer` and `Timeout` utilities can be used together as well.
+        this context manager can be used with any block and can help catch and
+        cancel long-running operations. Note that the `Timer` and `Timeout`
+        utilities can also be used in the same context block, as demonstrated
+        below.
 
         .. code-block:: python
 
