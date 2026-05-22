@@ -117,15 +117,7 @@ class Timer:
 
     @property
     def elapsed_time(self) -> float:
-        """
-        Return the elapsed time in seconds.
-
-        Returns
-        -------
-        elapsed : float
-            Time difference between entering and exiting a context block.
-
-        """
+        """The elapsed time in seconds."""
         return self._stop - self._start
 
     def print_elapsed(self, units: Literal['s', 'min', 'h'] = 's') -> None:
