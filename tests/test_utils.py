@@ -67,3 +67,37 @@ def test_timer():
     assert timer._converter['s'](3600.) == 3600.
     assert timer._converter['min'](3600.) == 60.
     assert timer._converter['h'](3600.) == 1.
+
+
+def test_timeout():
+
+    # initialization
+    timeout = sun.utils.Timeout(1, name='TestTimeout', raise_exc=False)
+    TimeoutError = type(timeout.exception)
+
+    assert type(timeout.exception).__name__ == 'TimeoutError'
+    assert str(timeout.exception) == 'TestTimeout exceeded 1.00 seconds.'
+
+    # does not expire
+    with sun.utils.Timeout(0.1, name='NoExpire') as timeout:
+        time.sleep(0.001)
+
+    assert timeout.expired is False
+
+    # expires and raises exception
+    with pytest.raises(TimeoutError, match='Timeout exceeded'):
+        with sun.utils.Timeout(0.001):
+            time.sleep(0.1)
+
+    # expires but does not raise exception
+    with sun.utils.Timeout(0.001, raise_exc=False) as timeout:
+        time.sleep(0.1)
+
+    assert timeout.expired is True
+
+    # differentiate user interruptions
+    with pytest.raises(KeyboardInterrupt):
+        with sun.utils.Timeout(1.0, raise_exc=False) as timeout:
+            raise KeyboardInterrupt
+
+    assert timeout.expired is False
