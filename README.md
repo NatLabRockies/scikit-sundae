@@ -76,7 +76,7 @@ plt.show()
 
 **Notes:**
 * If you are new to Python, check out [Spyder IDE](https://www.spyder-ide.org/). Spyder is a powerful interactive development environment (IDE) that can make programming in Python more approachable to new users.
-* Check the [solve_ivp](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) documentation from scipy or the [scipy-dae](https://pypi.org/project/scipy-dae/) package repository if you are looking for common examples to test out and compare against. Translating an example from another package can help you learn how to use scikit-SUNDAE before trying to solve more challenging problems.
+* Check the [solve_ivp](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) documentation from scipy or the [solve-dae](https://pypi.org/project/solve-dae/) package repository if you are looking for common examples to test out and compare against. Translating an example from another package can help you learn how to use scikit-SUNDAE before trying to solve more challenging problems.
 
 ## Citing this Work
 This work was authored by researchers at the National Laboratory of the Rockies (NLR). If you use use this package in your work, please include the following citation:
