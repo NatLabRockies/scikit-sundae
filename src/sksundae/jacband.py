@@ -6,32 +6,41 @@ pattern and/or bandwidth.
 """
 
 from __future__ import annotations
+
 from typing import Callable, Any, TYPE_CHECKING
 
 import inspect
+
 from warnings import warn
 
 import numpy as np
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from numpy.typing import ndarray
     from scipy.sparse import spmatrix
 
 
-def _cvode_pattern(rhsfn: Callable, t0: float, y0: ndarray,
-                   userdata: Any = None) -> ndarray:
+def _cvode_pattern(
+    rhsfn: Callable, t0: float, y0: ndarray, userdata: Any = None
+) -> ndarray:
     """Jacobian pattern for CVODE functions. Access via j_pattern()."""
     # wrap rhsfn for cases w/ and w/o userdata
     signature = inspect.signature(rhsfn)
 
     if len(signature.parameters) == 3:
-        def wrapper(t, y, yp): return rhsfn(t, y, yp)
+
+        def wrapper(t, y, yp):
+            return rhsfn(t, y, yp)
+
     elif len(signature.parameters) == 4:
         if userdata is None:
-            warn("'rhsfn' signature has 4 inputs so 'userdata' is expected,"
-                 " but 'userdata=None'. Ensure this was intentional.")
+            warn(
+                "'rhsfn' signature has 4 inputs so 'userdata' is expected,"
+                " but 'userdata=None'. Ensure this was intentional."
+            )
 
-        def wrapper(t, y, yp): return rhsfn(t, y, yp, userdata)
+        def wrapper(t, y, yp):
+            return rhsfn(t, y, yp, userdata)
     else:
         raise ValueError("'rhsfn' signature must have either 3 or 4 inputs.")
 
@@ -72,20 +81,31 @@ def _cvode_pattern(rhsfn: Callable, t0: float, y0: ndarray,
     return np.column_stack(j_cols)
 
 
-def _ida_pattern(resfn: Callable, t0: float, y0: ndarray, yp0: ndarray = None,
-                 userdata: Any = None) -> ndarray:
+def _ida_pattern(
+    resfn: Callable,
+    t0: float,
+    y0: ndarray,
+    yp0: ndarray = None,
+    userdata: Any = None,
+) -> ndarray:
     """Jacobian pattern for IDA functions. Access via j_pattern()."""
     # wrap resfn for cases w/ and w/o userdata
     signature = inspect.signature(resfn)
 
     if len(signature.parameters) == 4:
-        def wrapper(t, y, yp, res): return resfn(t, y, yp, res)
+
+        def wrapper(t, y, yp, res):
+            return resfn(t, y, yp, res)
+
     elif len(signature.parameters) == 5:
         if userdata is None:
-            warn("'rhsfn' signature has 5 inputs so 'userdata' is expected,"
-                 " but 'userdata=None'. Ensure this was intentional.")
+            warn(
+                "'rhsfn' signature has 5 inputs so 'userdata' is expected,"
+                " but 'userdata=None'. Ensure this was intentional."
+            )
 
-        def wrapper(t, y, yp, res): return resfn(t, y, yp, res, userdata)
+        def wrapper(t, y, yp, res):
+            return resfn(t, y, yp, res, userdata)
     else:
         raise ValueError("'rhsfn' signature must have either 4 or 5 inputs.")
 
@@ -133,8 +153,13 @@ def _ida_pattern(resfn: Callable, t0: float, y0: ndarray, yp0: ndarray = None,
     return np.column_stack(j_cols)
 
 
-def j_pattern(rhsfn: Callable, t0: float, y0: ndarray, yp0: ndarray = None,
-              userdata: Any = None) -> ndarray:
+def j_pattern(
+    rhsfn: Callable,
+    t0: float,
+    y0: ndarray,
+    yp0: ndarray = None,
+    userdata: Any = None,
+) -> ndarray:
     """
     Approximate the Jacobian pattern.
 
@@ -204,11 +229,13 @@ def bandwidth(A: ndarray) -> tuple[int]:
 
     """
     from scipy.linalg import bandwidth
+
     return bandwidth(A)
 
 
-def reduce_bandwidth(A: ndarray | spmatrix,
-                     symmetric: bool = False) -> tuple[ndarray]:
+def reduce_bandwidth(
+    A: ndarray | spmatrix, symmetric: bool = False
+) -> tuple[ndarray]:
     """
     Find a row/col reordering to reduce bandwidth.
 
