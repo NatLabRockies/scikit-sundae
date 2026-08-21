@@ -45,6 +45,9 @@ where = ["src"]
 line-length = 80
 exclude = ["build", "docs", "images", "reports", "C_programs"]
 
+[tool.ruff.format]
+quote-style = "preserve"
+
 [tool.ruff.lint]
 preview = true
 select = [
@@ -68,6 +71,12 @@ convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*" = ["D"]
+
+[tool.coverage.report]
+exclude_also = [
+    "def __repr__",
+    "if TYPE_CHECKING",
+]
 
 [project.optional-dependencies]
 docs = [
