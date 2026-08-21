@@ -79,15 +79,15 @@ class Timer:
         self._units = units
         self._converter = {
             's': lambda t: t,
-            'min': lambda t: t / 60.,
-            'h': lambda t: t / 3600.,
+            'min': lambda t: t / 60.0,
+            'h': lambda t: t / 3600.0,
         }
 
-        self._start = 0.
-        self._stop = 0.
+        self._start = 0.0
+        self._stop = 0.0
         self._display = display
 
-    def __repr__(self) -> str:  # pragma: no cover
+    def __repr__(self) -> str:
         """Quick representation of the timer showing name, time, and units."""
         elapsed = self._converter[self._units](self.elapsed_time)
         elapsed_string = f"{elapsed} {self._units}"

@@ -1,9 +1,6 @@
-<!-- <img alt='Logo' style='width: 75%; min-width: 250px; max-width: 500px;'
- src='https://github.com/NatLabRockies/scikit-sundae/blob/main/images/readme_logo.png?raw=true'/> -->
+# scikit-SUNDAE
 
- # scikit-SUNDAE
-
-[![ci](https://github.com/NatLabRockies/scikit-sundae/actions/workflows/ci.yml/badge.svg)](https://github.com/NatLabRockies/scikit-sundae/actions/workflows/ci.yml) &nbsp;
+[![ci-tests](https://github.com/NatLabRockies/scikit-sundae/actions/workflows/ci.yml/badge.svg)](https://github.com/NatLabRockies/scikit-sundae/actions/workflows/ci.yml) &nbsp;
 [![license](https://img.shields.io/badge/license-BSD--3-blue.svg)](https://github.com/NatLabRockies/scikit-sundae/blob/main/LICENSE) &nbsp;
 ![coverage](https://github.com/NatLabRockies/scikit-sundae/blob/main/images/coverage.svg?raw=true) <br>
 [![conda](https://img.shields.io/conda/vn/conda-forge/scikit-sundae)](https://anaconda.org/channels/conda-forge/packages/scikit-sundae/overview) &nbsp;

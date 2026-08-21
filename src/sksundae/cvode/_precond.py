@@ -1,6 +1,5 @@
-# cvode._precond.py
-
 from __future__ import annotations
+
 from typing import Callable
 
 
@@ -9,8 +8,9 @@ class CVODEPrecond:
 
     __slots__ = ('setupfn', 'solvefn', 'side', '_prectype')
 
-    def __init__(self, setupfn: Callable | None, solvefn: Callable,
-                 side: str = 'left') -> None:
+    def __init__(
+        self, setupfn: Callable | None, solvefn: Callable, side: str = 'left'
+    ) -> None:
         """
         Wrapper for passing preconditioner functions to CVODE. Preconditioning
         is only supported by iterative solvers (gmres, bicgstab, tfqmr).

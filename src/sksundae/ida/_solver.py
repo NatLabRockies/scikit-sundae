@@ -1,12 +1,10 @@
-# ida._solver.py
-
 from __future__ import annotations
 
 from typing import Callable, Literal, TYPE_CHECKING
 
 from sksundae._cy_ida import IDA as _IDA, IDAResult as _IDAResult
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from numpy import ndarray
 
 
@@ -16,8 +14,8 @@ class IDA:
     def __init__(self, resfn: Callable, **options) -> None:
         """
         A class to wrap the implicit differential algebraic (IDA) solver from
-        SUNDIALS [1]_ [2]_. IDA solves both ordinary differential equations
-        (ODEs) and differiential agebraic equations (DAEs).
+        SUNDIALS [1]_ [2]_. IDA solves both implicit ordinary differential
+        equations (ODEs) and differential algebraic equations (DAEs).
 
         Parameters
         ----------
@@ -52,7 +50,7 @@ class IDA:
         atol : float or array_like[float], optional
             Absolute tolerance. A scalar will apply to all variables equally,
             while an array (matching 'y' length) sets specific tolerances for
-            eqch variable. The default is 1e-6.
+            each variable. The default is 1e-6.
         linsolver : {'dense', 'band', 'sparse', ...}, optional
             Choice of linear solver, defaults to 'dense'. 'band' requires both
             'lband' and 'uband'. 'sparse' uses SuperLU_MT [3]_ and requires
@@ -62,10 +60,10 @@ class IDA:
             'dense' and 'band'. They use OpenBLAS-linked LAPACK [4]_ routines,
             but can have noticeable overhead for small (<100) systems.
         lband : int or None, optional
-            Lower Jacobian bandwidth. Given a DAE system `0 = F(t, y, yp)`,
-            the Jacobian is `J = dF_i/dy_j + cj*dF_i/dyp_j`. Required when
-            'linsolver' is 'band'. Use zero if no values are below the main
-            diagonal. Defaults to None.
+            Lower Jacobian bandwidth. Given a system `0 = F(t, y, yp)`, the
+            Jacobian is `J = dF_i/dy_j + cj*dF_i/dyp_j`. Required if 'linsolver'
+            is 'band'. Use zero if no values are below the main diagonal. The
+            default is None.
         uband : int or None, optional
             Upper Jacobian bandwidth. Required when 'linsolver' is 'band'. Use
             zero if no elements are above the main diagonal. Defaults to None.
@@ -105,8 +103,8 @@ class IDA:
             If 'constraints_idx' is not None, then this option must include an
             array of equal length specifying the types of constraints to apply.
             Values should be in `{-2, -1, 1, 2}` which apply `y[i] < 0`,
-            `y[i] <= 0`, `y[i] >= 0`, and `y[i] > 0`, respectively. The
-            default is None.
+            `y[i] <= 0`, `y[i] >= 0`, and `y[i] > 0`, respectively. The default
+            is None.
         eventsfn : Callable or None, optional
             Events function with signature `g(t, y, yp, events[, userdata])`.
             If None (default), no events are tracked. See the notes for more
@@ -117,7 +115,7 @@ class IDA:
                 terminal: list[bool, int], optional
                     Specifies solver behavior for each event. A boolean stops
                     the solver (True) or just records the event (False). An
-                    integer stops the solver after than many occurrences. The
+                    integer stops the solver after that many occurrences. The
                     default is `[True]*num_events`.
                 direction: list[int], optional
                     Determines which event slopes to track: `-1` (negative),
@@ -156,7 +154,7 @@ class IDA:
         than overwriting it. For example, using `res[:] = F(t, y, yp)` is
         correct whereas `res = F(t, y, yp)` is not.
 
-        When any user-defined function require data outside of their normal
+        When any user-defined function requires data outside of their normal
         arguments, you can supply optional 'userdata'. When given, 'userdata'
         must appear in ALL function signatures ('rhsfn', 'eventsfn', 'jacfn',
         'precond', and 'jactimes') even if it is not used in all functions. Of
@@ -326,8 +324,12 @@ class IDA:
         """
         return self.__IDA.init_step(t0, y0, yp0)
 
-    def step(self, t: float, method: Literal['normal', 'onestep'] = 'normal',
-             tstop: float | None = None) -> IDAResult:
+    def step(
+        self,
+        t: float,
+        method: Literal['normal', 'onestep'] = 'normal',
+        tstop: float | None = None,
+    ) -> IDAResult:
         """
         Return the solution at time 't'.
 

@@ -21,6 +21,7 @@ None.
 None.
 
 ### Chores
+- Fix typos in solver docstrings, use global coverage ignores in `pyproject.toml` ([#55](https://github.com/NatLabRockies/scikit-sundae/pull/55))
 - Move to using `ruff` for linting and start tracking `Cython` addition issue ([#45](https://github.com/NatLabRockies/scikit-sundae/pull/45))
 - Make GitHub hyperlinks reference new org name `NREL` -> `NatLabRockies` ([#42](https://github.com/NatLabRockies/scikit-sundae/pull/42))
 - Allow single backticks for sphinx inline code (`default_role = 'literal'`) ([#40](https://github.com/NatLabRockies/scikit-sundae/pull/40))
