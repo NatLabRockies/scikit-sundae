@@ -1,6 +1,5 @@
 name: sun
 channels:
-  - conda-forge/label/python_rc
   - conda-forge
 dependencies:
   - sundials=7.8
