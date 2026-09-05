@@ -75,21 +75,13 @@ cdef void _sunerr_handler(int line, const char* func, const char* file,
         print(f"\n[{decoded_func}, Error: {err_code}] {decoded_msg}\n")
 
 
-cdef svec2np(N_Vector nvec, np.ndarray[DTYPE_t, ndim=1] np_array):
-    """Fill a numpy array with values from an N_Vector."""
-    cdef sunrealtype* nv_ptr
-
-    nv_ptr = N_VGetArrayPointer(nvec)
-    ptr2np(nv_ptr, np_array)
-
-
-cdef np.ndarray[DTYPE_t, ndim=1] svec2np_nocopy(N_Vector nvec):
+cdef np.ndarray[DTYPE_t, ndim=1] svec2np(N_Vector nvec):
     """Return a numpy array that shares memory with an N_Vector."""
     cdef sunrealtype* data_ptr = N_VGetArrayPointer(nvec)
-    return sptr2np_nocopy(data_ptr, N_VGetLength(nvec))
+    return sptr2np(data_ptr, N_VGetLength(nvec))
 
 
-cdef np.ndarray[DTYPE_t, ndim=1] sptr2np_nocopy(sunrealtype* nv_ptr, Py_ssize_t length):
+cdef np.ndarray[DTYPE_t, ndim=1] sptr2np(sunrealtype* nv_ptr, Py_ssize_t length):
     """Return a numpy array that shares memory with an N_Vector pointer."""
     cdef sunrealtype[::1] memview = <sunrealtype[:length]> nv_ptr
     return np.asarray(memview, dtype=DTYPE)
@@ -101,13 +93,6 @@ cdef np2svec(np.ndarray[DTYPE_t, ndim=1] np_array, N_Vector nvec):
 
     nv_ptr = N_VGetArrayPointer(nvec)
     np2ptr(np_array, nv_ptr)
-
-
-cdef ptr2np(sunrealtype* nv_ptr, np.ndarray[DTYPE_t, ndim=1] np_array):
-    """Fill a numpy array with values from an N_Vector pointer."""
-    cdef sunindextype size = <sunindextype> np_array.size
-
-    np_array[:] = <sunrealtype[:size]> nv_ptr
 
 
 cdef np2ptr(np.ndarray[DTYPE_t, ndim=1] np_array, sunrealtype* nv_ptr):
