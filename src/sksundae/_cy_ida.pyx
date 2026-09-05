@@ -1,5 +1,3 @@
-# _cy_ida.pyx
-
 # Enable embedded signatures for the entire module
 # cython: embedsignature=True, embeddedsignature.format='python'
 
@@ -90,37 +88,37 @@ LSMESSAGES = {
 cdef int _resfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
                         void* data) except -1:
     """Wraps 'resfn' by converting between N_Vector and ndarray types."""
+    cdef np.ndarray[DTYPE_t, ndim=1] np_yy, np_yp, np_rr
 
     aux = <AuxData> data
 
-    svec2np(yy, aux.np_yy)
-    svec2np(yp, aux.np_yp)
+    np_yy = svec2np_nocopy(yy)
+    np_yp = svec2np_nocopy(yp)
+    np_rr = svec2np_nocopy(rr)
 
     if aux.with_userdata:
-        _ = aux.resfn(t, aux.np_yy, aux.np_yp, aux.np_rr, aux.userdata)
+        _ = aux.resfn(t, np_yy, np_yp, np_rr, aux.userdata)
     else:
-        _ = aux.resfn(t, aux.np_yy, aux.np_yp, aux.np_rr)
+        _ = aux.resfn(t, np_yy, np_yp, np_rr)
 
-    np2svec(aux.np_rr, rr)
-    
     return 0
 
 
 cdef int _eventsfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
                            sunrealtype* ee, void* data) except -1:
     """Wraps 'eventsfn' by converting between N_Vector and ndarray types."""
+    cdef np.ndarray[DTYPE_t, ndim=1] np_yy, np_yp, np_ee
 
     aux = <AuxData> data
 
-    svec2np(yy, aux.np_yy)
-    svec2np(yp, aux.np_yp)
+    np_yy = svec2np_nocopy(yy)
+    np_yp = svec2np_nocopy(yp)
+    np_ee = sptr2np_nocopy(ee, aux.num_events)
 
     if aux.with_userdata:
-        _ = aux.eventsfn(t, aux.np_yy, aux.np_yp, aux.np_ee, aux.userdata)
+        _ = aux.eventsfn(t, np_yy, np_yp, np_ee, aux.userdata)
     else:
-        _ = aux.eventsfn(t, aux.np_yy, aux.np_yp, aux.np_ee)
-
-    np2ptr(aux.np_ee, ee)
+        _ = aux.eventsfn(t, np_yy, np_yp, np_ee)
     
     return 0
 
@@ -129,18 +127,18 @@ cdef int _jacfn_wrapper(sunrealtype t, sunrealtype cj, N_Vector yy, N_Vector yp,
                         N_Vector rr, SUNMatrix JJ, void* data, N_Vector tmp1,
                         N_Vector tmp2, N_Vector tmp3) except -1:
     """Wraps 'jacfn' by converting between N_Vector and ndarray types."""
+    cdef np.ndarray[DTYPE_t, ndim=1] np_yy, np_yp, np_rr
     
     aux = <AuxData> data
 
-    svec2np(yy, aux.np_yy)
-    svec2np(yp, aux.np_yp)
-    svec2np(rr, aux.np_rr)
+    np_yy = svec2np_nocopy(yy)
+    np_yp = svec2np_nocopy(yp)
+    np_rr = svec2np_nocopy(rr)
 
     if aux.with_userdata:
-        _ = aux.jacfn(t, aux.np_yy, aux.np_yp, aux.np_rr, cj, aux.np_JJ,
-                      aux.userdata)
+        _ = aux.jacfn(t, np_yy, np_yp, np_rr, cj, aux.np_JJ, aux.userdata)
     else:
-        _ = aux.jacfn(t, aux.np_yy, aux.np_yp, aux.np_rr, cj, aux.np_JJ)
+        _ = aux.jacfn(t, np_yy, np_yp, np_rr, cj, aux.np_JJ)
 
     np2smat(aux.np_JJ, JJ, aux.sparsity)
 
@@ -150,18 +148,19 @@ cdef int _jacfn_wrapper(sunrealtype t, sunrealtype cj, N_Vector yy, N_Vector yp,
 cdef int _psetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
                          sunrealtype cj, void* data) except -1:
     """Wraps 'psetup' by converting between N_Vector and ndarray types."""
+    cdef np.ndarray[DTYPE_t, ndim=1] np_yy, np_yp, np_rr
     
     aux = <AuxData> data
     psetup = aux.precond.setupfn
 
-    svec2np(yy, aux.np_yy)
-    svec2np(yp, aux.np_yp)
-    svec2np(rr, aux.np_rr)
+    np_yy = svec2np_nocopy(yy)
+    np_yp = svec2np_nocopy(yp)
+    np_rr = svec2np_nocopy(rr)
 
     if aux.with_userdata:
-        _ = psetup(t, aux.np_yy, aux.np_yp, aux.np_rr, cj, aux.userdata)
+        _ = psetup(t, np_yy, np_yp, np_rr, cj, aux.userdata)
     else:
-        _ = psetup(t, aux.np_yy, aux.np_yp, aux.np_rr, cj)
+        _ = psetup(t, np_yy, np_yp, np_rr, cj)
 
     return 0
 
@@ -170,23 +169,22 @@ cdef int _psolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
                          N_Vector rv, N_Vector zv, sunrealtype cj,
                          sunrealtype delta, void* data) except -1:
     """Wraps 'psolve' by converting between N_Vector and ndarray types."""
+    cdef np.ndarray[DTYPE_t, ndim=1] np_yy, np_yp, np_rr, np_rv, np_zv
     
     aux = <AuxData> data
     psolve = aux.precond.solvefn
 
-    svec2np(yy, aux.np_yy)
-    svec2np(yp, aux.np_yp)
-    svec2np(rr, aux.np_rr)
-    svec2np(rv, aux.np_rv)
+    np_yy = svec2np_nocopy(yy)
+    np_yp = svec2np_nocopy(yp)
+    np_rr = svec2np_nocopy(rr)
+    np_rv = svec2np_nocopy(rv)
+    np_zv = svec2np_nocopy(zv)
 
     if aux.with_userdata:
-        _ = psolve(t, aux.np_yy, aux.np_yp, aux.np_rr, aux.np_rv, aux.np_zv,
-                   cj, delta, aux.userdata)
+        _ = psolve(t, np_yy, np_yp, np_rr, np_rv, np_zv, cj, delta,
+                   aux.userdata)
     else:
-        _ = psolve(t, aux.np_yy, aux.np_yp, aux.np_rr, aux.np_rv, aux.np_zv,
-                   cj, delta)
-
-    np2svec(aux.np_zv, zv)
+        _ = psolve(t, np_yy, np_yp, np_rr, np_rv, np_zv, cj, delta)
 
     return 0
 
@@ -194,18 +192,19 @@ cdef int _psolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
 cdef int _jvsetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
                           sunrealtype cj, void* data) except -1:
     """Wraps 'jvsolve' by converting between N_Vector and ndarray types."""
+    cdef np.ndarray[DTYPE_t, ndim=1] np_yy, np_yp, np_rr
     
     aux = <AuxData> data
     jvsetup = aux.jactimes.setupfn
 
-    svec2np(yy, aux.np_yy)
-    svec2np(yp, aux.np_yp)
-    svec2np(rr, aux.np_rr)
+    np_yy = svec2np_nocopy(yy)
+    np_yp = svec2np_nocopy(yp)
+    np_rr = svec2np_nocopy(rr)
 
     if aux.with_userdata:
-        _ = jvsetup(t, aux.np_yy, aux.np_yp, aux.np_rr, cj, aux.userdata)
+        _ = jvsetup(t, np_yy, np_yp, np_rr, cj, aux.userdata)
     else:
-        _ = jvsetup(t, aux.np_yy, aux.np_yp, aux.np_rr, cj)
+        _ = jvsetup(t, np_yy, np_yp, np_rr, cj)
 
     return 0
 
@@ -214,23 +213,21 @@ cdef int _jvsolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
                           N_Vector vv, N_Vector Jv, sunrealtype cj, void* data,
                           N_Vector tmp1, N_Vector tmp2) except -1:
     """Wraps 'jvsolve' by converting between N_Vector and ndarray types."""
+    cdef np.ndarray[DTYPE_t, ndim=1] np_yy, np_yp, np_rr, np_vv, np_Jv
     
     aux = <AuxData> data
     jvsolve = aux.jactimes.solvefn
 
-    svec2np(yy, aux.np_yy)
-    svec2np(yp, aux.np_yp)
-    svec2np(rr, aux.np_rr)
-    svec2np(vv, aux.np_vv)
+    np_yy = svec2np_nocopy(yy)
+    np_yp = svec2np_nocopy(yp)
+    np_rr = svec2np_nocopy(rr)
+    np_vv = svec2np_nocopy(vv)
+    np_Jv = svec2np_nocopy(Jv)
 
     if aux.with_userdata:
-        _ = jvsolve(t, aux.np_yy, aux.np_yp, aux.np_rr, aux.np_vv,
-                    aux.np_Jv, cj, aux.userdata)
+        _ = jvsolve(t, np_yy, np_yp, np_rr, np_vv, np_Jv, cj, aux.userdata)
     else:
-        _ = jvsolve(t, aux.np_yy, aux.np_yp, aux.np_rr, aux.np_vv,
-                    aux.np_Jv, cj)
-
-    np2svec(aux.np_Jv, Jv)
+        _ = jvsolve(t, np_yy, np_yp, np_rr, np_vv, np_Jv, cj)
 
     return 0
 
@@ -245,14 +242,9 @@ cdef class AuxData:
     """
     cdef np.ndarray np_yy       # state variables
     cdef np.ndarray np_yp       # yy time derivatives
-    cdef np.ndarray np_rr       # residuals array
-    cdef np.ndarray np_ee       # events array
     cdef np.ndarray np_JJ       # Jacobian matrix
-    cdef np.ndarray np_rv       # precond rvec
-    cdef np.ndarray np_zv       # precond zvec
-    cdef np.ndarray np_vv       # jactimes vv
-    cdef np.ndarray np_Jv       # jactimes Jv
     cdef np.ndarray np_cc       # constraints (-2, -1, 0, 1, 2)
+    cdef int num_events
     cdef bint with_userdata
     cdef bint is_constrained
 
@@ -268,14 +260,13 @@ cdef class AuxData:
     def __cinit__(self, sunindextype NEQ, object options):
         self.np_yy = np.empty(NEQ, DTYPE)
         self.np_yp = np.empty(NEQ, DTYPE)
-        self.np_rr = np.empty(NEQ, DTYPE)
         
         self.resfn = options["resfn"]
         self.userdata = options["userdata"]
         self.with_userdata = 1 if self.userdata is not None else 0
 
         self.eventsfn = options["eventsfn"]
-        self.np_ee = np.empty(options["num_events"], DTYPE)
+        self.num_events = options["num_events"]
 
         self.jacfn = options["jacfn"]
         self.linsolver = options["linsolver"]
@@ -298,20 +289,7 @@ cdef class AuxData:
             self.np_JJ = np.empty(0, DTYPE)
 
         self.precond = options["precond"]
-        if self.precond is not None:
-            self.np_rv = np.empty(NEQ, DTYPE)
-            self.np_zv = np.empty(NEQ, DTYPE)
-        else:
-            self.np_rv = np.empty(0, DTYPE)
-            self.np_zv = np.empty(0, DTYPE)
-
         self.jactimes = options["jactimes"]
-        if self.jactimes is not None:
-            self.np_vv = np.empty(NEQ, DTYPE)
-            self.np_Jv = np.empty(NEQ, DTYPE)
-        else:
-            self.np_vv = np.empty(0, DTYPE)
-            self.np_Jv = np.empty(0, DTYPE)
 
         constraints_idx = options["constraints_idx"]
         constraints_type = options["constraints_type"]

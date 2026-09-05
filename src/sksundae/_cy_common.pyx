@@ -1,6 +1,5 @@
-# _cy_common.pyx
-
 # Dependencies
+import numpy as np
 cimport numpy as np
 
 from cpython.exc cimport (
@@ -47,7 +46,9 @@ elif SUNDIALS_INT_TYPE == "long int":
 
 cdef _pyerr_handler():
     """Catch and re-raise Python exceptions in Cython code."""
-    cdef PyObject *errtype, *errvalue, *errtraceback
+    cdef PyObject *errtype
+    cdef PyObject *errvalue
+    cdef PyObject *errtraceback
 
     PyErr_Fetch(&errtype, &errvalue, &errtraceback)
     PyErr_Restore(errtype, errvalue, errtraceback)
@@ -80,6 +81,18 @@ cdef svec2np(N_Vector nvec, np.ndarray[DTYPE_t, ndim=1] np_array):
 
     nv_ptr = N_VGetArrayPointer(nvec)
     ptr2np(nv_ptr, np_array)
+
+
+cdef np.ndarray[DTYPE_t, ndim=1] svec2np_nocopy(N_Vector nvec):
+    """Return a numpy array that shares memory with an N_Vector."""
+    cdef sunrealtype* data_ptr = N_VGetArrayPointer(nvec)
+    return sptr2np_nocopy(data_ptr, N_VGetLength(nvec))
+
+
+cdef np.ndarray[DTYPE_t, ndim=1] sptr2np_nocopy(sunrealtype* nv_ptr, Py_ssize_t length):
+    """Return a numpy array that shares memory with an N_Vector pointer."""
+    cdef sunrealtype[::1] memview = <sunrealtype[:length]> nv_ptr
+    return np.asarray(memview, dtype=DTYPE)
 
 
 cdef np2svec(np.ndarray[DTYPE_t, ndim=1] np_array, N_Vector nvec):
