@@ -87,21 +87,6 @@ cdef np.ndarray[DTYPE_t, ndim=1] sptr2np(sunrealtype* nv_ptr, Py_ssize_t length)
     return np.asarray(memview, dtype=DTYPE)
 
 
-cdef np2svec(np.ndarray[DTYPE_t, ndim=1] np_array, N_Vector nvec):
-    """Fill an N_Vector with values from a numpy array."""
-    cdef sunrealtype* nv_ptr
-
-    nv_ptr = N_VGetArrayPointer(nvec)
-    np2ptr(np_array, nv_ptr)
-
-
-cdef np2ptr(np.ndarray[DTYPE_t, ndim=1] np_array, sunrealtype* nv_ptr):
-    """Fill an N_Vector pointer with values from a numpy array."""
-    cdef sunindextype size = <sunindextype> np_array.size
-
-    nv_ptr[0:size] = &np_array[0]
-
-
 cdef np2smat_dense(np.ndarray[DTYPE_t, ndim=2] np_A, SUNMatrix smat):
     """Fill a SUNDenseMatrix with values from a 2D numpy array."""
     cdef sunindextype i, j

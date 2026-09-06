@@ -239,11 +239,11 @@ cdef class AuxData:
     to function wrappers.
 
     """
-    cdef np.ndarray np_JJ       # Jacobian matrix
+    cdef np.ndarray np_JJ       # Jacobian matrix (1D or 2D)
     cdef np.ndarray np_cc       # constraints (-2, -1, 0, 1, 2)
-    cdef int num_events
-    cdef bint with_userdata
-    cdef bint is_constrained
+    cdef int num_events         # number of event functions
+    cdef bint with_userdata     # if user callables expect userdata
+    cdef bint is_constrained    # if constraints are provided
 
     cdef object rhsfn           # Callable
     cdef object userdata        # Any
@@ -340,13 +340,13 @@ cdef class _cvLSSparseDQJac:
         cdef sunrealtype uround, srur
         cdef sunindextype j, k, start, end
         cdef np.ndarray[INT_TYPE_t, ndim=1] cols, indices
-        cdef np.ndarray[DTYPE_t, ndim=1] diff, inc, inc_inv, ytemp, yptemp
+        cdef np.ndarray[DTYPE_t, ndim=1] diff, inc, inc_inv, y_tmp, yp_tmp
         
         aux = <AuxData> self.aux
         sparsity = aux.sparsity
 
-        ytemp = y.copy()
-        yptemp = yp.copy()
+        y_tmp = y.copy()
+        yp_tmp = yp.copy()
 
         uround = np.finfo(DTYPE).eps
         srur = np.sqrt(uround)
@@ -371,14 +371,14 @@ cdef class _cvLSSparseDQJac:
         for k in range(ngroups):
             cols = self.groups[k]
 
-            ytemp[cols] += inc[cols]
+            y_tmp[cols] += inc[cols]
           
             if aux.with_userdata:
-                _ = aux.rhsfn(t, ytemp, yptemp, aux.userdata)
+                _ = aux.rhsfn(t, y_tmp, yp_tmp, aux.userdata)
             else:
-                _ = aux.rhsfn(t, ytemp, yptemp)
+                _ = aux.rhsfn(t, y_tmp, yp_tmp)
 
-            diff = yptemp - yp
+            diff = yp_tmp - yp
             
             for j in cols:
                 start = sparsity.indptr[j]
@@ -390,7 +390,7 @@ cdef class _cvLSSparseDQJac:
                 elif JJ.ndim == 2:
                     JJ[indices, j] = inc_inv[j]*diff[indices]
                 
-            ytemp[cols] = y[cols]
+            y_tmp[cols] = y[cols]
 
     cdef _setup_memory(self, void* mem):
         """
@@ -523,6 +523,8 @@ cdef class CVODE:
             raise MemoryError("SUNLinSol constructor returned NULL.")
 
     cdef _set_tolerances(self):
+        cdef np.ndarray[DTYPE_t, ndim=1] atol_tmp
+
         rtol = self._options["rtol"]
         atol = self._options["atol"]
 
@@ -534,8 +536,10 @@ cdef class CVODE:
                 raise ValueError(f"'atol' length ({atol.size}) differs from"
                                  f" problem size ({self.NEQ}).")
 
+            # set atol via shared-mem np array
             self.atol = N_VNew_Serial(atol.size, self.ctx)
-            np2svec(atol, self.atol)
+            atol_tmp = svec2np(self.atol)
+            atol_tmp[:] = atol
 
             flag = CVodeSVtolerances(self.mem, rtol, self.atol)
 
@@ -587,6 +591,7 @@ cdef class CVODE:
 
         cdef int flag
         cdef np.ndarray np_eventsdir
+        cdef np.ndarray[DTYPE_t, ndim=1] y0_tmp, constraints_tmp
 
         # 1) Initialize parallel environment (skip, only use serial here)
 
@@ -605,7 +610,9 @@ cdef class CVODE:
         if self.yy is NULL:
             raise MemoryError("N_VNew_Serial returned a NULL pointer for yy.")
         
-        np2svec(y0.copy(), self.yy)
+        # set y0 via shared-mem np array
+        y0_tmp = svec2np(self.yy)
+        y0_tmp[:] = y0
 
         # 5) Create CVODE object
         if self._options["method"].lower() == "adams":
@@ -736,12 +743,12 @@ cdef class CVODE:
         constraints_type = self._options["constraints_type"]
         if constraints_idx is not None:
 
-            np_constraints = np.zeros(self.NEQ, DTYPE)
-            for idx, val in zip(constraints_idx, constraints_type):
-                np_constraints[idx] = val
-
+            # set constraints via shared-mem np array
             self.constraints = N_VNew_Serial(self.NEQ, self.ctx)
-            np2svec(np_constraints, self.constraints)
+            constraints_tmp = svec2np(self.constraints)
+
+            for idx, val in zip(constraints_idx, constraints_type):
+                constraints_tmp[idx] = val
 
             flag = CVodeSetConstraints(self.mem, self.constraints)
             if flag < 0:
@@ -756,8 +763,6 @@ cdef class CVODE:
         cdef int flag
         cdef np.ndarray[DTYPE_t, ndim=1] yy_tmp
 
-        yy_tmp = y0.copy()
-
         # Memory allocation and settings steps handled in _setup()... only runs
         # on first call, or if the size of the system changes.
 
@@ -769,7 +774,8 @@ cdef class CVODE:
             flag = self._setup(t0, y0)
 
         else:
-            np2svec(yy_tmp, self.yy)
+            yy_tmp = svec2np(self.yy)
+            yy_tmp[:] = y0
             
             flag = CVodeReInit(self.mem, t0, self.yy)
             if flag < 0:
@@ -777,7 +783,7 @@ cdef class CVODE:
 
         self._initialized = True
 
-        # Construct result instance to return
+        # Construct result instance to return, using shared-mem np array
         yy_tmp = svec2np(self.yy)
 
         nfev, njev = _collect_stats(self.mem)

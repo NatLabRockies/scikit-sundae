@@ -240,11 +240,11 @@ cdef class AuxData:
     to function wrappers.
 
     """
-    cdef np.ndarray np_JJ       # Jacobian matrix
+    cdef np.ndarray np_JJ       # Jacobian matrix (1D or 2D)
     cdef np.ndarray np_cc       # constraints (-2, -1, 0, 1, 2)
-    cdef int num_events
-    cdef bint with_userdata
-    cdef bint is_constrained
+    cdef int num_events         # number of event functions
+    cdef bint with_userdata     # if user callables expect userdata
+    cdef bint is_constrained    # if constraints are provided
 
     cdef object resfn           # Callable
     cdef object userdata        # Any
@@ -344,14 +344,14 @@ cdef class _idaLSSparseDQJac:
         cdef sunindextype j, k, start, end
         cdef np.ndarray[INT_TYPE_t, ndim=1] cols, indices
         cdef np.ndarray[DTYPE_t, ndim=1] diff, inc, inc_inv
-        cdef np.ndarray[DTYPE_t, ndim=1] ytemp, yptemp, rtemp
+        cdef np.ndarray[DTYPE_t, ndim=1] y_tmp, yp_tmp, r_tmp
         
         aux = <AuxData> self.aux
         sparsity = aux.sparsity
 
-        ytemp = y.copy()
-        yptemp = yp.copy()
-        rtemp = res.copy()
+        y_tmp = y.copy()
+        yp_tmp = yp.copy()
+        r_tmp = res.copy()
         
         IDAGetCurrentStep(self.mem, &hh)
 
@@ -379,15 +379,15 @@ cdef class _idaLSSparseDQJac:
         for k in range(ngroups):
             cols = self.groups[k]
 
-            ytemp[cols] += inc[cols]
-            yptemp[cols] += cj*inc[cols]
+            y_tmp[cols] += inc[cols]
+            yp_tmp[cols] += cj*inc[cols]
           
             if aux.with_userdata:
-                _ = aux.resfn(t, ytemp, yptemp, rtemp, aux.userdata)
+                _ = aux.resfn(t, y_tmp, yp_tmp, r_tmp, aux.userdata)
             else:
-                _ = aux.resfn(t, ytemp, yptemp, rtemp)
+                _ = aux.resfn(t, y_tmp, yp_tmp, r_tmp)
 
-            diff = rtemp - res
+            diff = r_tmp - res
             
             for j in cols:
                 start = sparsity.indptr[j]
@@ -399,8 +399,8 @@ cdef class _idaLSSparseDQJac:
                 elif JJ.ndim == 2:
                     JJ[indices, j] = inc_inv[j]*diff[indices]
                 
-            ytemp[cols] = y[cols]
-            yptemp[cols] = yp[cols]
+            y_tmp[cols] = y[cols]
+            yp_tmp[cols] = yp[cols]
 
     cdef _setup_memory(self, void* mem):
         """
@@ -533,6 +533,8 @@ cdef class IDA:
             raise MemoryError("SUNLinSol constructor returned NULL.")
 
     cdef _set_tolerances(self):
+        cdef np.ndarray[DTYPE_t, ndim=1] atol_tmp
+
         rtol = self._options["rtol"]
         atol = self._options["atol"]
 
@@ -544,8 +546,10 @@ cdef class IDA:
                 raise ValueError(f"'atol' length ({atol.size}) differs from"
                                  f" problem size ({self.NEQ}).")
 
+            # set atol via shared-mem np array
             self.atol = N_VNew_Serial(atol.size, self.ctx)
-            np2svec(atol, self.atol)
+            atol_tmp = svec2np(self.atol)
+            atol_tmp[:] = atol
 
             flag = IDASVtolerances(self.mem, rtol, self.atol)
 
@@ -606,6 +610,8 @@ cdef class IDA:
 
         cdef int flag
         cdef np.ndarray np_eventsdir
+        cdef np.ndarray[DTYPE_t, ndim=1] y0_tmp, yp0_tmp
+        cdef np.ndarray[DTYPE_t, ndim=1] algidx_tmp, constraints_tmp
 
         # 1) Initialize parallel environment (skip, only use serial here)
 
@@ -629,8 +635,12 @@ cdef class IDA:
         if self.yp is NULL:
             raise MemoryError("N_VNew_Serial returned a NULL pointer for yp.")
 
-        np2svec(y0.copy(), self.yy)
-        np2svec(yp0.copy(), self.yp)
+        # set y0 and yp0 via shared-mem np arrays
+        y0_tmp = svec2np(self.yy)
+        y0_tmp[:] = y0
+
+        yp0_tmp = svec2np(self.yp)
+        yp0_tmp[:] = yp0
 
         # 4) and 5) Create matrix and linear solver - they must match
         self._create_linsolver()
@@ -726,15 +736,14 @@ cdef class IDA:
         SUNContext_ClearErrHandlers(self.ctx)
         SUNContext_PushErrHandler(self.ctx, _sunerr_handler, NULL)
 
-        # Set algebraic variable indices
+        # Set algebraic variable indices using shared-mem np array
+        self.algidx = N_VNew_Serial(self.NEQ, self.ctx)
+        algidx_tmp = svec2np(self.algidx)
+        algidx_tmp[:] = 1.0
 
-        np_algidx = np.ones(self.NEQ, DTYPE)
         if self._options["algebraic_idx"] is not None:
             for idx in self._options["algebraic_idx"]:
-                np_algidx[idx] = 0.0
-
-        self.algidx = N_VNew_Serial(self.NEQ, self.ctx)
-        np2svec(np_algidx, self.algidx)
+                algidx_tmp[idx] = 0.0
 
         flag = IDASetId(self.mem, self.algidx)
         if flag < 0:
@@ -769,12 +778,12 @@ cdef class IDA:
         constraints_type = self._options["constraints_type"]
         if constraints_idx is not None:
 
-            np_constraints = np.zeros(self.NEQ, DTYPE)
-            for idx, val in zip(constraints_idx, constraints_type):
-                np_constraints[idx] = val
-
+            # set constraints via shared-mem np array
             self.constraints = N_VNew_Serial(self.NEQ, self.ctx)
-            np2svec(np_constraints, self.constraints)
+            constraints_tmp = svec2np(self.constraints)
+
+            for idx, val in zip(constraints_idx, constraints_type):
+                constraints_tmp[idx] = val
 
             flag = IDASetConstraints(self.mem, self.constraints)
             if flag < 0:
@@ -793,9 +802,6 @@ cdef class IDA:
         cdef sunrealtype ic_t0
         cdef np.ndarray[DTYPE_t, ndim=1] yy_tmp, yp_tmp
 
-        yy_tmp = y0.copy()
-        yp_tmp = yp0.copy()
-
         # Steps 1-15 handled in _setup()... only runs on first call, or if the
         # size of the system changes.
 
@@ -807,8 +813,11 @@ cdef class IDA:
             flag = self._setup(t0, y0, yp0)
 
         else:
-            np2svec(yy_tmp, self.yy)
-            np2svec(yp_tmp, self.yp)
+            yy_tmp = svec2np(self.yy)
+            yy_tmp[:] = y0
+
+            yp_tmp = svec2np(self.yp)
+            yp_tmp[:] = yp0
 
             flag = IDAReInit(self.mem, t0, self.yy, self.yp)
             if flag < 0:
