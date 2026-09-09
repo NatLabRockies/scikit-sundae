@@ -95,7 +95,7 @@ cdef int _rhsfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
     aux = <AuxData> data
 
     np_yy = svec2np(yy)
-    np_yp = svec2np(yp)
+    np_yp = svec2np(yp, writable=True)
 
     if aux.with_userdata:
         _ = aux.rhsfn(t, np_yy, np_yp, aux.userdata)
@@ -113,7 +113,7 @@ cdef int _eventsfn_wrapper(sunrealtype t, N_Vector yy, sunrealtype* ee,
     aux = <AuxData> data
 
     np_yy = svec2np(yy)
-    np_ee = sptr2np(ee, aux.num_events)
+    np_ee = sptr2np(ee, aux.num_events, writable=True)
 
     if aux.with_userdata:
         _ = aux.eventsfn(t, np_yy, np_ee, aux.userdata)
@@ -180,7 +180,7 @@ cdef int _psolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rv,
     np_yy = svec2np(yy)
     np_yp = svec2np(yp)
     np_rv = svec2np(rv)
-    np_zv = svec2np(zv)
+    np_zv = svec2np(zv, writable=True)
 
     if aux.with_userdata:
         _ = psolve(t, np_yy, np_yp, np_rv, np_zv, gamma, delta, lr,
@@ -221,7 +221,7 @@ cdef int _jvsolve_wrapper(N_Vector vv, N_Vector Jv, sunrealtype t, N_Vector yy,
     np_yy = svec2np(yy)
     np_yp = svec2np(yp)
     np_vv = svec2np(vv)
-    np_Jv = svec2np(Jv)
+    np_Jv = svec2np(Jv, writable=True)
 
     if aux.with_userdata:
         _ = jvsolve(t, np_yy, np_yp, np_vv, np_Jv, aux.userdata)
@@ -538,7 +538,7 @@ cdef class CVODE:
 
             # set atol via shared-mem np array
             self.atol = N_VNew_Serial(atol.size, self.ctx)
-            atol_tmp = svec2np(self.atol)
+            atol_tmp = svec2np(self.atol, writable=True)
             atol_tmp[:] = atol
 
             flag = CVodeSVtolerances(self.mem, rtol, self.atol)
@@ -611,7 +611,7 @@ cdef class CVODE:
             raise MemoryError("N_VNew_Serial returned a NULL pointer for yy.")
         
         # set y0 via shared-mem np array
-        y0_tmp = svec2np(self.yy)
+        y0_tmp = svec2np(self.yy, writable=True)
         y0_tmp[:] = y0
 
         # 5) Create CVODE object
@@ -745,7 +745,7 @@ cdef class CVODE:
 
             # set constraints via shared-mem np array
             self.constraints = N_VNew_Serial(self.NEQ, self.ctx)
-            constraints_tmp = svec2np(self.constraints)
+            constraints_tmp = svec2np(self.constraints, writable=True)
 
             for idx, val in zip(constraints_idx, constraints_type):
                 constraints_tmp[idx] = val
@@ -774,7 +774,7 @@ cdef class CVODE:
             flag = self._setup(t0, y0)
 
         else:
-            yy_tmp = svec2np(self.yy)
+            yy_tmp = svec2np(self.yy, writable=True)
             yy_tmp[:] = y0
             
             flag = CVodeReInit(self.mem, t0, self.yy)

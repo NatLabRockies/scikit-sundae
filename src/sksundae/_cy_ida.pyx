@@ -94,7 +94,7 @@ cdef int _resfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
 
     np_yy = svec2np(yy)
     np_yp = svec2np(yp)
-    np_rr = svec2np(rr)
+    np_rr = svec2np(rr, writable=True)
 
     if aux.with_userdata:
         _ = aux.resfn(t, np_yy, np_yp, np_rr, aux.userdata)
@@ -113,7 +113,7 @@ cdef int _eventsfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
 
     np_yy = svec2np(yy)
     np_yp = svec2np(yp)
-    np_ee = sptr2np(ee, aux.num_events)
+    np_ee = sptr2np(ee, aux.num_events, writable=True)
 
     if aux.with_userdata:
         _ = aux.eventsfn(t, np_yy, np_yp, np_ee, aux.userdata)
@@ -178,7 +178,7 @@ cdef int _psolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
     np_yp = svec2np(yp)
     np_rr = svec2np(rr)
     np_rv = svec2np(rv)
-    np_zv = svec2np(zv)
+    np_zv = svec2np(zv, writable=True)
 
     if aux.with_userdata:
         _ = psolve(t, np_yy, np_yp, np_rr, np_rv, np_zv, cj, delta,
@@ -222,7 +222,7 @@ cdef int _jvsolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rr,
     np_yp = svec2np(yp)
     np_rr = svec2np(rr)
     np_vv = svec2np(vv)
-    np_Jv = svec2np(Jv)
+    np_Jv = svec2np(Jv, writable=True)
 
     if aux.with_userdata:
         _ = jvsolve(t, np_yy, np_yp, np_rr, np_vv, np_Jv, cj, aux.userdata)
@@ -548,7 +548,7 @@ cdef class IDA:
 
             # set atol via shared-mem np array
             self.atol = N_VNew_Serial(atol.size, self.ctx)
-            atol_tmp = svec2np(self.atol)
+            atol_tmp = svec2np(self.atol, writable=True)
             atol_tmp[:] = atol
 
             flag = IDASVtolerances(self.mem, rtol, self.atol)
@@ -636,10 +636,10 @@ cdef class IDA:
             raise MemoryError("N_VNew_Serial returned a NULL pointer for yp.")
 
         # set y0 and yp0 via shared-mem np arrays
-        y0_tmp = svec2np(self.yy)
+        y0_tmp = svec2np(self.yy, writable=True)
         y0_tmp[:] = y0
 
-        yp0_tmp = svec2np(self.yp)
+        yp0_tmp = svec2np(self.yp, writable=True)
         yp0_tmp[:] = yp0
 
         # 4) and 5) Create matrix and linear solver - they must match
@@ -738,7 +738,7 @@ cdef class IDA:
 
         # Set algebraic variable indices using shared-mem np array
         self.algidx = N_VNew_Serial(self.NEQ, self.ctx)
-        algidx_tmp = svec2np(self.algidx)
+        algidx_tmp = svec2np(self.algidx, writable=True)
         algidx_tmp[:] = 1.0
 
         if self._options["algebraic_idx"] is not None:
@@ -780,7 +780,7 @@ cdef class IDA:
 
             # set constraints via shared-mem np array
             self.constraints = N_VNew_Serial(self.NEQ, self.ctx)
-            constraints_tmp = svec2np(self.constraints)
+            constraints_tmp = svec2np(self.constraints, writable=True)
 
             for idx, val in zip(constraints_idx, constraints_type):
                 constraints_tmp[idx] = val
@@ -813,10 +813,10 @@ cdef class IDA:
             flag = self._setup(t0, y0, yp0)
 
         else:
-            yy_tmp = svec2np(self.yy)
+            yy_tmp = svec2np(self.yy, writable=True)
             yy_tmp[:] = y0
 
-            yp_tmp = svec2np(self.yp)
+            yp_tmp = svec2np(self.yp, writable=True)
             yp_tmp[:] = yp0
 
             flag = IDAReInit(self.mem, t0, self.yy, self.yp)

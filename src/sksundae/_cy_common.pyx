@@ -75,16 +75,19 @@ cdef void _sunerr_handler(int line, const char* func, const char* file,
         print(f"\n[{decoded_func}, Error: {err_code}] {decoded_msg}\n")
 
 
-cdef np.ndarray[DTYPE_t, ndim=1] svec2np(N_Vector nvec):
+cdef np.ndarray[DTYPE_t, ndim=1] svec2np(N_Vector nvec, bint writable=False):
     """Return a numpy array that shares memory with an N_Vector."""
     cdef sunrealtype* data_ptr = N_VGetArrayPointer(nvec)
-    return sptr2np(data_ptr, N_VGetLength(nvec))
+    return sptr2np(data_ptr, N_VGetLength(nvec), writable)
 
 
-cdef np.ndarray[DTYPE_t, ndim=1] sptr2np(sunrealtype* nv_ptr, Py_ssize_t length):
+cdef np.ndarray[DTYPE_t, ndim=1] sptr2np(sunrealtype* nv_ptr, Py_ssize_t length,
+                                         bint writable=False):
     """Return a numpy array that shares memory with an N_Vector pointer."""
     cdef sunrealtype[::1] memview = <sunrealtype[:length]> nv_ptr
-    return np.asarray(memview, dtype=DTYPE)
+    cdef np.ndarray arr = np.asarray(memview, dtype=DTYPE)
+    arr.flags.writeable = writable
+    return arr
 
 
 cdef np2smat_dense(np.ndarray[DTYPE_t, ndim=2] np_A, SUNMatrix smat):
