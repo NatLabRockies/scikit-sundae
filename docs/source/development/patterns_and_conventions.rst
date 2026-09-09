@@ -49,7 +49,7 @@ Within each group, we generally list imports in ascending order of their length 
     from .c_sundials cimport *
     
     # Local Package Imports - local cython 
-    from ._cy_common cimport np2svec, svec2np, np2smat
+    from ._cy_common cimport svec2np, sptr2np, np2smat
 
     # Local Package Imports - local python
     from .common import RichResult
