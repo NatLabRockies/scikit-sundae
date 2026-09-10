@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "scikit-sundae"
 readme = "README.md"
 dynamic = ["version"]
-requires-python = ">=3.10,<3.15"
+requires-python = ">=3.11,<3.16"
 license = "BSD-3-Clause"
 license-files = ["LICENSE*"]
 description = "Python bindings to SUNDIALS differential algebraic equation solvers."
@@ -24,11 +24,11 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Mathematics",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
 ]
 dependencies = ["numpy", "scipy"]
 

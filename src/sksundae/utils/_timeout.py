@@ -4,7 +4,7 @@ import _thread
 import threading
 
 
-class TimeoutError(BaseException):
+class TimeoutExpiredError(BaseException):
     pass
 
 
@@ -12,7 +12,12 @@ class Timeout:
     """Timeout context manager."""
 
     __slots__ = (
-        '_seconds', '_name', '_raise_exc', '_timer', '_expired', '_exception',
+        '_seconds',
+        '_name',
+        '_raise_exc',
+        '_timer',
+        '_expired',
+        '_exception',
     )
 
     def __init__(
@@ -23,9 +28,9 @@ class Timeout:
     ) -> None:
         """
         Uses a thread to track the time spent in a context block and forces an
-        exit (and optionally raises a `TimeoutError`) if the execution time
-        exceeds a given number of seconds. See the notes for important details
-        on edge cases where this may not work as expected.
+        exit (and optionally raises a `TimeoutExpiredError`) if the execution
+        time exceeds a given number of seconds. See the notes for important
+        details on edge cases where this may not work as expected.
 
         Parameters
         ----------
@@ -34,8 +39,8 @@ class Timeout:
         name : str, optional
             Name to identify the block in exit messages, by default 'Timeout'.
         raise_exc : bool, optional
-            If True, raise a `TimeoutError` on exit when the given time limit is
-            exceeded. Use False to handle the timeout manually.
+            If True, raise a `TimeoutExpiredError` on exit when the given time
+            limit is exceeded. Use False to handle the timeout manually.
 
         Notes
         -----
@@ -119,7 +124,7 @@ class Timeout:
 
         self._timer = None
         self._expired = False
-        self._exception = TimeoutError(
+        self._exception = TimeoutExpiredError(
             f"{self._name} exceeded {self._seconds:.2f} seconds."
         )
 
@@ -151,7 +156,7 @@ class Timeout:
         return self._expired
 
     @property
-    def exception(self) -> TimeoutError:
+    def exception(self) -> TimeoutExpiredError:
         """The exception to raise if the timer expired."""
         return self._exception
 

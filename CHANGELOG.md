@@ -3,7 +3,7 @@
 ## [Unreleased](https://github.com/NatLabRockies/scikit-sundae)
 
 ### New Features
-- Allow builds against newest SUNDIALS v7.9, use in CI/RTD workflows ([#56](https://github.com/NatLabRockies/scikit-sundae/pull/54))
+- Allow builds against newest SUNDIALS v7.9, use in CI/RTD workflows ([#56](https://github.com/NatLabRockies/scikit-sundae/pull/56))
 - Move to newest SUNDIALS v7.8 for CI builds/tests ([#54](https://github.com/NatLabRockies/scikit-sundae/pull/54))
 - Add `Timer` and `Timeout` utils to profile and limit execution times ([#53](https://github.com/NatLabRockies/scikit-sundae/pull/53))
 - Move to newest SUNDIALS v7.7 for CI builds/tests ([#52](https://github.com/NatLabRockies/scikit-sundae/pull/52))
@@ -14,12 +14,13 @@
 None.
 
 ### Bug Fixes
+- Namespace overlap for `TimeoutError` fixed by rename to `TimeoutExpiredError` ([#57](https://github.com/NatLabRockies/scikit-sundae/pull/57))
 - Address memory leak with raised exceptions caused by persisting solver/data objects ([#51](https://github.com/NatLabRockies/scikit-sundae/pull/51))
 - Fixes issue where `jacfn` is ignored when using `sparse` linear solver ([#48](https://github.com/NatLabRockies/scikit-sundae/pull/48))
 - Ensures exception propagations work correctly with numpy 2.4 release ([#41](https://github.com/NatLabRockies/scikit-sundae/pull/41))
 
 ### Breaking Changes
-None.
+- Drop support for Python 3.10, reaches end of life in October 2026 ([#57](https://github.com/NatLabRockies/scikit-sundae/pull/57))
 
 ### Chores
 - Fix typos in solver docstrings, use global coverage ignores in `pyproject.toml` ([#55](https://github.com/NatLabRockies/scikit-sundae/pull/55))
