@@ -285,6 +285,49 @@ def test_failures_on_exceptions():
         _ = solver.solve(tspan, y0)
 
 
+def test_readonly_arrays():
+    y0 = np.array([1, 2])
+    tspan = np.linspace(0, 10, 11)
+
+    # y is read-only in rhsfn
+    def bad_rhsfn(t, y, yp):
+        y[0] = 0.0
+        yp[0] = 0.1
+        yp[1] = y[1]
+
+    solver = CVODE(bad_rhsfn, rtol=1e-9, atol=1e-12)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
+    # y is read-only in eventsfn
+    def bad_eventsfn(t, y, events):
+        y[0] = 0.0
+        events[0] = y[0] - 1.55
+
+    solver = CVODE(ode, rtol=1e-9, atol=1e-12, eventsfn=bad_eventsfn,
+                   num_events=1)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
+    # y is read-only in jacfn
+    def bad_jacfn_y(t, y, yp, JJ):
+        y[0] = 0.0
+        JJ[1, 1] = 1
+
+    solver = CVODE(ode, rtol=1e-9, atol=1e-12, jacfn=bad_jacfn_y)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
+    # yp is read-only in jacfn
+    def bad_jacfn_yp(t, y, yp, JJ):
+        yp[0] = 0.0
+        JJ[1, 1] = 1
+
+    solver = CVODE(ode, rtol=1e-9, atol=1e-12, jacfn=bad_jacfn_yp)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
+
 def test_CVODEResult():
     y0 = np.array([1, 2])
 

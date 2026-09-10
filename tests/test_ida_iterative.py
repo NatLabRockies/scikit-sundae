@@ -181,3 +181,182 @@ def test_w_jactimes_solve(linsolver):
 
     soln = solver.solve(tspan, y0, yp0)
     assert soln.success
+
+
+def test_readonly_arrays_precond():
+    tspan = np.logspace(-6, 6, 50)
+    y0 = np.array([1, 0, 0])
+    yp0 = np.zeros_like(y0)
+    userdata = {'Pmat': np.zeros((y0.size, y0.size))}
+
+    # y is read-only in psetupfn
+    def bad_psetupfn_y(t, y, yp, res, cj, userdata):
+        y[0] = 0.0
+
+    precond = IDAPrecond(bad_psetupfn_y, psolvefn)
+    solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0',
+                 atol=1e-12, linsolver='gmres', precond=precond,
+                 userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    # yp is read-only in psetupfn
+    def bad_psetupfn_yp(t, y, yp, res, cj, userdata):
+        yp[0] = 0.0
+
+    precond = IDAPrecond(bad_psetupfn_yp, psolvefn)
+    solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0',
+                 atol=1e-12, linsolver='gmres', precond=precond,
+                 userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    # res is read-only in psetupfn
+    def bad_psetupfn_res(t, y, yp, res, cj, userdata):
+        res[0] = 0.0
+
+    precond = IDAPrecond(bad_psetupfn_res, psolvefn)
+    solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0',
+                 atol=1e-12, linsolver='gmres', precond=precond,
+                 userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    # y is read-only in psolvefn
+    def bad_psolvefn_y(t, y, yp, res, rvec, zvec, cj, delta, userdata):
+        y[0] = 0.0
+        zvec[:] = rvec
+
+    precond = IDAPrecond(psetupfn, bad_psolvefn_y)
+    solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0',
+                 atol=1e-12, linsolver='gmres', precond=precond,
+                 userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    # yp is read-only in psolvefn
+    def bad_psolvefn_yp(t, y, yp, res, rvec, zvec, cj, delta, userdata):
+        yp[0] = 0.0
+        zvec[:] = rvec
+
+    precond = IDAPrecond(psetupfn, bad_psolvefn_yp)
+    solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0',
+                 atol=1e-12, linsolver='gmres', precond=precond,
+                 userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    # res is read-only in psolvefn
+    def bad_psolvefn_res(t, y, yp, res, rvec, zvec, cj, delta, userdata):
+        res[0] = 0.0
+        zvec[:] = rvec
+
+    precond = IDAPrecond(psetupfn, bad_psolvefn_res)
+    solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0',
+                 atol=1e-12, linsolver='gmres', precond=precond,
+                 userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    # rvec is read-only in psolvefn
+    def bad_psolvefn_rvec(t, y, yp, res, rvec, zvec, cj, delta, userdata):
+        rvec[0] = 0.0
+        zvec[:] = rvec
+
+    precond = IDAPrecond(psetupfn, bad_psolvefn_rvec)
+    solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0',
+                 atol=1e-12, linsolver='gmres', precond=precond,
+                 userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+
+def test_readonly_arrays_jactimes():
+    tspan = np.logspace(-6, 6, 50)
+    y0 = np.array([1, 0, 0])
+    yp0 = np.zeros_like(y0)
+    userdata = {'JJ': np.zeros((y0.size, y0.size))}
+
+    # y is read-only in jvsetupfn
+    def bad_jvsetupfn_y(t, y, yp, res, cj, userdata):
+        y[0] = 0.0
+
+    jactimes = IDAJacTimes(bad_jvsetupfn_y, jvsolvefn)
+    solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0',
+                 atol=1e-12, linsolver='gmres', jactimes=jactimes,
+                 userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    # yp is read-only in jvsetupfn
+    def bad_jvsetupfn_yp(t, y, yp, res, cj, userdata):
+        yp[0] = 0.0
+
+    jactimes = IDAJacTimes(bad_jvsetupfn_yp, jvsolvefn)
+    solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0',
+                 atol=1e-12, linsolver='gmres', jactimes=jactimes,
+                 userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    # res is read-only in jvsetupfn
+    def bad_jvsetupfn_res(t, y, yp, res, cj, userdata):
+        res[0] = 0.0
+
+    jactimes = IDAJacTimes(bad_jvsetupfn_res, jvsolvefn)
+    solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0',
+                 atol=1e-12, linsolver='gmres', jactimes=jactimes,
+                 userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    # y, yp, res, and v are read-only in jvsolvefn - use the harder 'resfn'
+    # problem so GMRES actually needs matrix-vector products (jvdae is too
+    # easy to trigger it)
+    def jvsetupfn_hard(t, y, yp, res, cj, userdata):
+        jacfn(t, y, yp, res, cj, userdata['JJ'], userdata)
+
+    def bad_jvsolvefn_y(t, y, yp, res, v, Jv, cj, userdata):
+        y[0] = 0.0
+        Jv[:] = userdata['JJ'].dot(v)
+
+    jactimes = IDAJacTimes(jvsetupfn_hard, bad_jvsolvefn_y)
+    solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0',
+                 atol=1e-12, linsolver='gmres', jactimes=jactimes,
+                 userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    def bad_jvsolvefn_yp(t, y, yp, res, v, Jv, cj, userdata):
+        yp[0] = 0.0
+        Jv[:] = userdata['JJ'].dot(v)
+
+    jactimes = IDAJacTimes(jvsetupfn_hard, bad_jvsolvefn_yp)
+    solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0',
+                 atol=1e-12, linsolver='gmres', jactimes=jactimes,
+                 userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    def bad_jvsolvefn_res(t, y, yp, res, v, Jv, cj, userdata):
+        res[0] = 0.0
+        Jv[:] = userdata['JJ'].dot(v)
+
+    jactimes = IDAJacTimes(jvsetupfn_hard, bad_jvsolvefn_res)
+    solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0',
+                 atol=1e-12, linsolver='gmres', jactimes=jactimes,
+                 userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    def bad_jvsolvefn_v(t, y, yp, res, v, Jv, cj, userdata):
+        v[0] = 0.0
+        Jv[:] = userdata['JJ'].dot(v)
+
+    jactimes = IDAJacTimes(jvsetupfn_hard, bad_jvsolvefn_v)
+    solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0',
+                 atol=1e-12, linsolver='gmres', jactimes=jactimes,
+                 userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+

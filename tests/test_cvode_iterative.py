@@ -183,3 +183,125 @@ def test_w_jactimes_solve(linsolver):
 
     soln = solver.solve(tspan, y0)
     assert soln.success
+
+
+def test_readonly_arrays_precond():
+    tspan = np.array([0, 3000])
+    y0 = np.array([2, 0])
+    userdata = {'JJ': np.zeros((y0.size, y0.size))}
+
+    # y is read-only in psetupfn
+    def bad_psetupfn_y(t, y, yp, jok, jnew, gamma, userdata):
+        y[0] = 0.0
+
+    precond = CVODEPrecond(bad_psetupfn_y, psolvefn)
+    solver = CVODE(rhsfn, linsolver='gmres', precond=precond,
+                   userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
+    # yp is read-only in psetupfn
+    def bad_psetupfn_yp(t, y, yp, jok, jnew, gamma, userdata):
+        yp[0] = 0.0
+
+    precond = CVODEPrecond(bad_psetupfn_yp, psolvefn)
+    solver = CVODE(rhsfn, linsolver='gmres', precond=precond,
+                   userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
+    # y is read-only in psolvefn
+    def bad_psolvefn_y(t, y, yp, rvec, zvec, gamma, delta, lr, userdata):
+        y[0] = 0.0
+        zvec[:] = rvec
+
+    precond = CVODEPrecond(psetupfn, bad_psolvefn_y)
+    solver = CVODE(rhsfn, linsolver='gmres', precond=precond,
+                   userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
+    # yp is read-only in psolvefn
+    def bad_psolvefn_yp(t, y, yp, rvec, zvec, gamma, delta, lr, userdata):
+        yp[0] = 0.0
+        zvec[:] = rvec
+
+    precond = CVODEPrecond(psetupfn, bad_psolvefn_yp)
+    solver = CVODE(rhsfn, linsolver='gmres', precond=precond,
+                   userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
+    # rvec is read-only in psolvefn
+    def bad_psolvefn_rvec(t, y, yp, rvec, zvec, gamma, delta, lr, userdata):
+        rvec[0] = 0.0
+        zvec[:] = rvec
+
+    precond = CVODEPrecond(None, bad_psolvefn_rvec)
+    solver = CVODE(rhsfn, linsolver='gmres', precond=precond,
+                   userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
+
+def test_readonly_arrays_jactimes():
+    tspan = np.array([0, 3000])
+    y0 = np.array([2, 0])
+    userdata = {'JJ': np.zeros((y0.size, y0.size))}
+
+    # y is read-only in jvsetupfn
+    def bad_jvsetupfn_y(t, y, yp, userdata):
+        y[0] = 0.0
+
+    jactimes = CVODEJacTimes(bad_jvsetupfn_y, jvsolvefn)
+    solver = CVODE(rhsfn, linsolver='gmres', jactimes=jactimes,
+                   userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
+    # yp is read-only in jvsetupfn
+    def bad_jvsetupfn_yp(t, y, yp, userdata):
+        yp[0] = 0.0
+
+    jactimes = CVODEJacTimes(bad_jvsetupfn_yp, jvsolvefn)
+    solver = CVODE(rhsfn, linsolver='gmres', jactimes=jactimes,
+                   userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
+    # y, yp, and v are read-only in jvsolvefn - use the stiffer 'rhsfn'
+    # problem so GMRES actually needs matrix-vector products (jvode is too
+    # easy to trigger it)
+    def jvsetupfn_hard(t, y, yp, userdata):
+        jacfn(t, y, yp, userdata['JJ'], userdata)
+
+    def bad_jvsolvefn_y(t, y, yp, v, Jv, userdata):
+        y[0] = 0.0
+        Jv[:] = userdata['JJ'].dot(v)
+
+    jactimes = CVODEJacTimes(jvsetupfn_hard, bad_jvsolvefn_y)
+    solver = CVODE(rhsfn, linsolver='gmres', jactimes=jactimes,
+                   userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
+    def bad_jvsolvefn_yp(t, y, yp, v, Jv, userdata):
+        yp[0] = 0.0
+        Jv[:] = userdata['JJ'].dot(v)
+
+    jactimes = CVODEJacTimes(jvsetupfn_hard, bad_jvsolvefn_yp)
+    solver = CVODE(rhsfn, linsolver='gmres', jactimes=jactimes,
+                   userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
+    def bad_jvsolvefn_v(t, y, yp, v, Jv, userdata):
+        v[0] = 0.0
+        Jv[:] = userdata['JJ'].dot(v)
+
+    jactimes = CVODEJacTimes(jvsetupfn_hard, bad_jvsolvefn_v)
+    solver = CVODE(rhsfn, linsolver='gmres', jactimes=jactimes,
+                   userdata=userdata)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
