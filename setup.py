@@ -10,7 +10,7 @@ from Cython.Build import cythonize
 from packaging.version import Version
 
 MIN_VERSION = Version('7.6.0')  # inclusive [MIN_VERSION, MAX_VERSION)
-MAX_VERSION = Version('7.9.0')  # not inclusive
+MAX_VERSION = Version('7.10.0')  # not inclusive
 
 
 def find_sundials():
