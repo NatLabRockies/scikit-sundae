@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/NatLabRockies/scikit-sundae)
 
 ### New Features
+- Allow builds against newest SUNDIALS v7.9, use in CI/RTD workflows ([#56](https://github.com/NatLabRockies/scikit-sundae/pull/54))
 - Move to newest SUNDIALS v7.8 for CI builds/tests ([#54](https://github.com/NatLabRockies/scikit-sundae/pull/54))
 - Add `Timer` and `Timeout` utils to profile and limit execution times ([#53](https://github.com/NatLabRockies/scikit-sundae/pull/53))
 - Move to newest SUNDIALS v7.7 for CI builds/tests ([#52](https://github.com/NatLabRockies/scikit-sundae/pull/52))

@@ -47,7 +47,9 @@ elif SUNDIALS_INT_TYPE == "long int":
 
 cdef _pyerr_handler():
     """Catch and re-raise Python exceptions in Cython code."""
-    cdef PyObject *errtype, *errvalue, *errtraceback
+    cdef PyObject *errtype
+    cdef PyObject *errvalue
+    cdef PyObject *errtraceback
 
     PyErr_Fetch(&errtype, &errvalue, &errtraceback)
     PyErr_Restore(errtype, errvalue, errtraceback)
