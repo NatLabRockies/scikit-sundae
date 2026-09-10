@@ -304,4 +304,3 @@ def test_readonly_arrays_jactimes():
                    userdata=userdata)
     with pytest.raises(ValueError, match='read-only'):
         _ = solver.solve(tspan, y0)
-
