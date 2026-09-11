@@ -46,7 +46,11 @@ In the code blocks below, we provide dummy event functions for both the `IDA` an
     solver = IDA(resfn, eventsfn=eventsfn, num_events=2,             
                  userdata=userdata)
 
-In the example above, `eventsfn` does not include a return value. Instead, the input signature must include an array by some name in the fourth position, here we call it `events`. This array is pre-allocated for you and only needs to be filled with expressions that, if equal to zero, will trigger an event. Even if you only have one event, you must fill it as `events[0]`, rather than setting `events` itself.
+In the example above, `eventsfn` does not include a return value. Instead, the input signature must include an array by some name in the fourth position, here we call it `events`. This array is pre-allocated for you and only needs to be filled with expressions that, if equal to zero, will trigger an event. Even if you only have one event, you must fill it as `events[0]`, rather than setting `events` itself, which would overwrite the pre-allocated array and lead to incorrect behavior.
+
+.. note::
+
+    Throughout the package, all user-defined functions follow the same convention demonstrated here. That is, the return values are ignored, and the output must be written to the designated pre-allocated arrays provided as input arguments. Each user-defined function has a specific array that it is expected to fill, and all other arrays should be treated as read-only. In the case of `eventsfn`, the designated output array is `events`. If you try to write to any other array, a `ValueError` will be raised.
 
 After `eventsfn` is defined, we set the `terminal` and `direction` attributes for each event by adding them to `eventsfn`. These must be set using lists with lengths matching the number of events. If you don't define these attributes, the defaults are `True` and `0`, respectively, for all events. Since the `events` array is pre-allocated for you, you must also specify the number of events `num_events` when you pass an events function to the solver. Failing to do so will raise an error.
 

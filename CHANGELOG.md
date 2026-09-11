@@ -11,7 +11,7 @@
 - Custom `__reduce__` methods, allowing solvers to be serialized ([#38](https://github.com/NatLabRockies/scikit-sundae/pull/38))
 
 ### Optimizations
-None.
+- Remove numpy buffers in favor of no-copy shared-memory `svec2np` functionality ([#58](https://github.com/NatLabRockies/scikit-sundae/pull/58))
 
 ### Bug Fixes
 - Namespace overlap for `TimeoutError` fixed by rename to `TimeoutExpiredError` ([#57](https://github.com/NatLabRockies/scikit-sundae/pull/57))
@@ -20,6 +20,7 @@ None.
 - Ensures exception propagations work correctly with numpy 2.4 release ([#41](https://github.com/NatLabRockies/scikit-sundae/pull/41))
 
 ### Breaking Changes
+- User defined callables take in read-only arrays, besides designated outputs ([#58](https://github.com/NatLabRockies/scikit-sundae/pull/58))
 - Drop support for Python 3.10, reaches end of life in October 2026 ([#57](https://github.com/NatLabRockies/scikit-sundae/pull/57))
 
 ### Chores

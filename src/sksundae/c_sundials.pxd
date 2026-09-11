@@ -1,5 +1,3 @@
-# c_sundials.pxd
-
 # Dependencies
 cimport numpy as np
 
@@ -41,6 +39,8 @@ cdef extern from "sundials/sundials_nvector.h":
     ctypedef _N_Vector* N_Vector
 
     void N_VDestroy(N_Vector v)
+    sunrealtype* N_VGetArrayPointer(N_Vector v)
+    sunindextype N_VGetLength(N_Vector v)
 
 # sundials_matrix.h
 cdef extern from "sundials/sundials_matrix.h":

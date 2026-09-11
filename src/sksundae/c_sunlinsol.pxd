@@ -1,5 +1,3 @@
-# c_sunlinsol.pxd
-
 from .c_sundials cimport *  # Access to types
 
 # sunlinsol_dense.h
