@@ -196,13 +196,15 @@ def test_ida_sparsity(linsolver):  # using idaLSSparseDQJac for dense/band
     npt.assert_allclose(soln.y, dae_soln(soln.t, y0))
 
 
-def test_ida_constraints():
+@pytest.mark.parametrize('sparsity', [None, np.array([[1, 0], [1, 1]])])
+def test_ida_constraints(sparsity):
     y0 = np.array([1, 2])
     yp0 = np.array([0.1, 0.2])
 
     # cannot satisfy constraints
     solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
-                 constraints_idx=[0, 1], constraints_type=[-2, -2])
+                 constraints_idx=[0, 1], constraints_type=[-2, -2],
+                 sparsity=sparsity)
 
     _ = solver.init_step(0, y0, yp0)
     soln = solver.step(10)
@@ -210,7 +212,8 @@ def test_ida_constraints():
 
     # can satisfy constraints
     solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
-                 constraints_idx=[0, 1], constraints_type=[2, 2])
+                 constraints_idx=[0, 1], constraints_type=[2, 2],
+                 sparsity=sparsity)
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)

@@ -241,10 +241,8 @@ cdef class AuxData:
 
     """
     cdef np.ndarray np_JJ       # Jacobian matrix (1D or 2D)
-    cdef np.ndarray np_cc       # constraints (-2, -1, 0, 1, 2)
     cdef int num_events         # number of event functions
     cdef bint with_userdata     # if user callables expect userdata
-    cdef bint is_constrained    # if constraints are provided
 
     cdef object resfn           # Callable
     cdef object userdata        # Any
@@ -286,19 +284,6 @@ cdef class AuxData:
         self.precond = options["precond"]
         self.jactimes = options["jactimes"]
 
-        constraints_idx = options["constraints_idx"]
-        constraints_type = options["constraints_type"]
-        if constraints_idx is not None:
-
-            self.is_constrained = True
-            self.np_cc = np.zeros(NEQ, INT_TYPE)
-            for idx, val in zip(constraints_idx, constraints_type):
-                self.np_cc[idx] = val
-
-        else:
-            self.is_constrained = False
-            self.np_cc = np.zeros(0, INT_TYPE)
-
 
 cdef class _idaLSSparseDQJac:
     """
@@ -313,6 +298,7 @@ cdef class _idaLSSparseDQJac:
 
     """
     cdef void* mem
+    cdef N_Vector constraints
     cdef AuxData aux
     cdef object groups      # dict[int, np.ndarray[int]]
 
@@ -343,8 +329,8 @@ cdef class _idaLSSparseDQJac:
         cdef sunrealtype hh, uround, srur
         cdef sunindextype j, k, start, end
         cdef np.ndarray[INT_TYPE_t, ndim=1] cols, indices
-        cdef np.ndarray[DTYPE_t, ndim=1] diff, inc, inc_inv
         cdef np.ndarray[DTYPE_t, ndim=1] y_tmp, yp_tmp, r_tmp
+        cdef np.ndarray[DTYPE_t, ndim=1] diff, inc, inc_inv, conj
         
         aux = <AuxData> self.aux
         sparsity = aux.sparsity
@@ -362,8 +348,8 @@ cdef class _idaLSSparseDQJac:
         inc = srur * np.maximum(np.abs(y), np.abs(hh*yp))
         inc = sign * np.maximum(srur, inc)
 
-        if aux.is_constrained:
-            conj = aux.np_cc
+        if self.constraints is not NULL:
+            conj = svec2np(self.constraints)
 
             mask1 = np.abs(conj) == 1
             flip1 = ((y + inc) * conj < 0)
@@ -404,14 +390,23 @@ cdef class _idaLSSparseDQJac:
 
     cdef _setup_memory(self, void* mem):
         """
-        Store mem for access to current step size. Cannot be a part of cinit
-        because void* types cannot be passed in from Python. 
+        Store mem for access to current step size. Cannot be a  part of cinit
+        because C pointer types cannot be passed in from Python. 
         
         """
         self.mem = mem
 
+    cdef _setup_constraints(self, N_Vector constraints):
+        """
+        Store the IDA constraints N_Vector, if any. Cannot be a  part of cinit
+        because C pointer types cannot be passed in from Python. 
+        
+        """
+        self.constraints = constraints
+
     def __dealloc__(self):
         self.mem = NULL
+        self.constraints = NULL
     
 
 class IDAResult(RichResult):
@@ -672,7 +667,8 @@ cdef class IDA:
             raise RuntimeError("IDASetLinearSolver - " + LSMESSAGES[flag])
 
         # 11) Set linear solver optional inputs
-        if self.aux.jacfn is None and self.aux.sparsity is not None:
+        spjac = None
+        if (self.aux.jacfn is None) and (self.aux.sparsity is not None):
             spjac = _idaLSSparseDQJac(self.aux)  # setup/store jacfn in AuxData
             spjac._setup_memory(self.mem)  # pass mem to access time step info
 
@@ -788,6 +784,10 @@ cdef class IDA:
             flag = IDASetConstraints(self.mem, self.constraints)
             if flag < 0:
                 raise RuntimeError("IDASetConstraints - " + IDAMESSAGES[flag])
+
+        if spjac is not None:
+            # share constraints N_Vector, if any (NULL otherwise, unused)
+            spjac._setup_constraints(self.constraints)
 
         self._size = self.NEQ
         self._malloc = True
