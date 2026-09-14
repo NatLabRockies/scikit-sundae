@@ -35,18 +35,24 @@ class CVODEJacTimes:
         The solve and setup functions require specific function signatures. For
         'solvefn' use `f(t, y, yp, v, Jv[, userdata])`. Any return values are
         ignored. Instead, the function should fill the pre-allocated memory for
-        'Jv' (a 1D array) with the solution (or approximation) to `J*v`. Use
-        `[:]` to fill the array rather than overwriting it. For example,
-        `Jv[:] = f(...)` is correct whereas `Jv = f(...)` is not. The user
-        is responsible for managing their own Jacobian data if needed. 'setupfn'
-        can be used to help setup any needed values/data so that 'solvefn' is
-        not overly complex.
+        'Jv' (a 1D array) with the solution (or approximation) to `J*v`, the
+        Jacobian-vector product. Use `[:]` to fill the array rather than
+        overwriting it. For example, `Jv[:] = f(...)` is correct whereas
+        `Jv = f(...)` is not. The user is responsible for managing their own
+        Jacobian data if needed. 'setupfn' can be used to help setup any needed
+        values/data so that 'solvefn' is not overly complex.
 
         'setupfn' requires the signature `f(t, y, yp[, userdata])`. As with
         'solvefn', any return values are ignored. However, you can use the
         function to define global variables or add them to `userdata` so they
         can be passed to 'solvefn'. The order of function calls is always
         'rhsfn' -> 'setupfn' -> 'solvefn' for each integration step.
+
+        Aside from the output array in the solve function (i.e., `Jv`), all
+        other input arguments are considered read-only. Attempting to modify a
+        read-only array (e.g., `y` or `yp`) will raise a `ValueError` upon use
+        by the SUNDIALS solvers. If you need to modify any of these arrays, you
+        should create a copy of the array and modify the copy instead.
 
         """
         if setupfn is None:

@@ -174,12 +174,12 @@ def run_pre_commit(session: nox.Session) -> None:
     """
     Run all linters/tests and make new badges
 
-    Order of sessions: ruff, spellcheck, pytest, genbadge. Using 'format' for
+    Order of sessions: spellcheck, ruff, pytest, genbadge. Using 'format' for
     linter, 'write' for spellcheck, and/or 'parallel' for pytest is permitted.
 
     """
-    run_ruff(session)
     run_spellcheck(session)
+    run_ruff(session)
 
     run_pytest(session)
     run_genbadge(session)

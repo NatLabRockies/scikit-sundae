@@ -1,5 +1,3 @@
-# _cy_cvode.pyx
-
 # Enable embedded signatures for the entire module
 # cython: embedsignature=True, embeddedsignature.format='python'
 
@@ -92,35 +90,35 @@ LSMESSAGES = {
 cdef int _rhsfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
                         void* data) except -1:
     """Wraps 'rhsfn' by converting between N_Vector and ndarray types."""
+    cdef np.ndarray[DTYPE_t, ndim=1] np_yy, np_yp
 
     aux = <AuxData> data
 
-    svec2np(yy, aux.np_yy)
+    np_yy = svec2np(yy)
+    np_yp = svec2np(yp, writable=True)
 
     if aux.with_userdata:
-        _ = aux.rhsfn(t, aux.np_yy, aux.np_yp, aux.userdata)
+        _ = aux.rhsfn(t, np_yy, np_yp, aux.userdata)
     else:
-        _ = aux.rhsfn(t, aux.np_yy, aux.np_yp)
+        _ = aux.rhsfn(t, np_yy, np_yp)
 
-    np2svec(aux.np_yp, yp)
-    
     return 0
 
 
 cdef int _eventsfn_wrapper(sunrealtype t, N_Vector yy, sunrealtype* ee,
                            void* data) except -1:
     """Wraps 'eventsfn' by converting between N_Vector and ndarray types."""
+    cdef np.ndarray[DTYPE_t, ndim=1] np_yy, np_ee
 
     aux = <AuxData> data
 
-    svec2np(yy, aux.np_yy)
+    np_yy = svec2np(yy)
+    np_ee = sptr2np(ee, aux.num_events, writable=True)
 
     if aux.with_userdata:
-        _ = aux.eventsfn(t, aux.np_yy, aux.np_ee, aux.userdata)
+        _ = aux.eventsfn(t, np_yy, np_ee, aux.userdata)
     else:
-        _ = aux.eventsfn(t, aux.np_yy, aux.np_ee)
-
-    np2ptr(aux.np_ee, ee)
+        _ = aux.eventsfn(t, np_yy, np_ee)
     
     return 0
 
@@ -129,16 +127,17 @@ cdef int _jacfn_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, SUNMatrix JJ,
                         void* data, N_Vector tmp1, N_Vector tmp2,
                         N_Vector tmp3) except -1:
     """Wraps 'jacfn' by converting between N_Vector and ndarray types."""
+    cdef np.ndarray[DTYPE_t, ndim=1] np_yy, np_yp
     
     aux = <AuxData> data
 
-    svec2np(yy, aux.np_yy)
-    svec2np(yp, aux.np_yp)
+    np_yy = svec2np(yy)
+    np_yp = svec2np(yp)
 
     if aux.with_userdata:
-        _ = aux.jacfn(t, aux.np_yy, aux.np_yp, aux.np_JJ, aux.userdata)
+        _ = aux.jacfn(t, np_yy, np_yp, aux.np_JJ, aux.userdata)
     else:
-        _ = aux.jacfn(t, aux.np_yy, aux.np_yp, aux.np_JJ)
+        _ = aux.jacfn(t, np_yy, np_yp, aux.np_JJ)
 
     np2smat(aux.np_JJ, JJ, aux.sparsity)
 
@@ -149,19 +148,20 @@ cdef int _psetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
                          sunbooleantype jok, sunbooleantype* jcurPtr,
                          sunrealtype gamma, void* data) except -1:
     """Wraps 'psetup' by converting between N_Vector and ndarray types."""
+    cdef np.ndarray[DTYPE_t, ndim=1] np_yy, np_yp
     
     aux = <AuxData> data
     psetup = aux.precond.setupfn
 
-    svec2np(yy, aux.np_yy)
-    svec2np(yp, aux.np_yp)
+    np_yy = svec2np(yy)
+    np_yp = svec2np(yp)
 
     jnew = list((jcurPtr[0],))
 
     if aux.with_userdata:
-        _ = psetup(t, aux.np_yy, aux.np_yp, jok, jnew, gamma, aux.userdata)
+        _ = psetup(t, np_yy, np_yp, jok, jnew, gamma, aux.userdata)
     else:
-        _ = psetup(t, aux.np_yy, aux.np_yp, jok, jnew, gamma)
+        _ = psetup(t, np_yy, np_yp, jok, jnew, gamma)
 
     jcurPtr[0] = 1 if jnew[0] else 0
 
@@ -172,22 +172,21 @@ cdef int _psolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rv,
                          N_Vector zv, sunrealtype gamma, sunrealtype delta,
                          int lr, void* data) except -1:
     """Wraps 'psolve' by converting between N_Vector and ndarray types."""
+    cdef np.ndarray[DTYPE_t, ndim=1] np_yy, np_yp, np_rv, np_zv
     
     aux = <AuxData> data
     psolve = aux.precond.solvefn
 
-    svec2np(yy, aux.np_yy)
-    svec2np(yp, aux.np_yp)
-    svec2np(rv, aux.np_rv)
+    np_yy = svec2np(yy)
+    np_yp = svec2np(yp)
+    np_rv = svec2np(rv)
+    np_zv = svec2np(zv, writable=True)
 
     if aux.with_userdata:
-        _ = psolve(t, aux.np_yy, aux.np_yp, aux.np_rv, aux.np_zv, gamma,
-                   delta, lr, aux.userdata)
+        _ = psolve(t, np_yy, np_yp, np_rv, np_zv, gamma, delta, lr,
+                   aux.userdata)
     else:
-        _ = psolve(t, aux.np_yy, aux.np_yp, aux.np_rv, aux.np_zv, gamma,
-                   delta, lr)
-
-    np2svec(aux.np_zv, zv)
+        _ = psolve(t, np_yy, np_yp, np_rv, np_zv, gamma, delta, lr)
 
     return 0
 
@@ -195,17 +194,18 @@ cdef int _psolve_wrapper(sunrealtype t, N_Vector yy, N_Vector yp, N_Vector rv,
 cdef int _jvsetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
                           void* data) except -1:
     """Wraps 'jvsetup' by converting between N_Vector and ndarray types."""
+    cdef np.ndarray[DTYPE_t, ndim=1] np_yy, np_yp
     
     aux = <AuxData> data
     jvsetup = aux.jactimes.setupfn
 
-    svec2np(yy, aux.np_yy)
-    svec2np(yp, aux.np_yp)
+    np_yy = svec2np(yy)
+    np_yp = svec2np(yp)
 
     if aux.with_userdata:
-        _ = jvsetup(t, aux.np_yy, aux.np_yp, aux.userdata)
+        _ = jvsetup(t, np_yy, np_yp, aux.userdata)
     else:
-        _ = jvsetup(t, aux.np_yy, aux.np_yp)
+        _ = jvsetup(t, np_yy, np_yp)
 
     return 0
 
@@ -213,20 +213,20 @@ cdef int _jvsetup_wrapper(sunrealtype t, N_Vector yy, N_Vector yp,
 cdef int _jvsolve_wrapper(N_Vector vv, N_Vector Jv, sunrealtype t, N_Vector yy,
                           N_Vector yp, void* data, N_Vector tmp) except -1:
     """Wraps 'jvsolve' by converting between N_Vector and ndarray types."""
+    cdef np.ndarray[DTYPE_t, ndim=1] np_yy, np_yp, np_vv, np_Jv
     
     aux = <AuxData> data
     jvsolve = aux.jactimes.solvefn
 
-    svec2np(yy, aux.np_yy)
-    svec2np(yp, aux.np_yp)
-    svec2np(vv, aux.np_vv)
+    np_yy = svec2np(yy)
+    np_yp = svec2np(yp)
+    np_vv = svec2np(vv)
+    np_Jv = svec2np(Jv, writable=True)
 
     if aux.with_userdata:
-        _ = jvsolve(t, aux.np_yy, aux.np_yp, aux.np_vv, aux.np_Jv, aux.userdata)
+        _ = jvsolve(t, np_yy, np_yp, np_vv, np_Jv, aux.userdata)
     else:
-        _ = jvsolve(t, aux.np_yy, aux.np_yp, aux.np_vv, aux.np_Jv)
-
-    np2svec(aux.np_Jv, Jv)
+        _ = jvsolve(t, np_yy, np_yp, np_vv, np_Jv)
 
     return 0
 
@@ -239,17 +239,9 @@ cdef class AuxData:
     to function wrappers.
 
     """
-    cdef np.ndarray np_yy       # state variables
-    cdef np.ndarray np_yp       # yy time derivatives (aka rhs values fy)
-    cdef np.ndarray np_ee       # events array
-    cdef np.ndarray np_JJ       # Jacobian matrix
-    cdef np.ndarray np_rv       # precond rvec
-    cdef np.ndarray np_zv       # precond zvec
-    cdef np.ndarray np_vv       # jactimes vv
-    cdef np.ndarray np_Jv       # jactimes Jv
-    cdef np.ndarray np_cc       # constraints (-2, -1, 0, 1, 2)
-    cdef bint with_userdata
-    cdef bint is_constrained
+    cdef np.ndarray np_JJ       # Jacobian matrix (1D or 2D)
+    cdef int num_events         # number of event functions
+    cdef bint with_userdata     # if user callables expect userdata
 
     cdef object rhsfn           # Callable
     cdef object userdata        # Any
@@ -261,15 +253,12 @@ cdef class AuxData:
     cdef object jactimes        # CVODEJacTimes
 
     def __cinit__(self, sunindextype NEQ, object options):
-        self.np_yy = np.empty(NEQ, DTYPE)
-        self.np_yp = np.empty(NEQ, DTYPE)
-        
         self.rhsfn = options["rhsfn"]
         self.userdata = options["userdata"]
         self.with_userdata = 1 if self.userdata is not None else 0
 
         self.eventsfn = options["eventsfn"]
-        self.np_ee = np.empty(options["num_events"], DTYPE)
+        self.num_events = options["num_events"]
 
         self.jacfn = options["jacfn"]
         self.linsolver = options["linsolver"]
@@ -292,33 +281,7 @@ cdef class AuxData:
             self.np_JJ = np.empty(0, DTYPE)
 
         self.precond = options["precond"]
-        if self.precond is not None:
-            self.np_rv = np.empty(NEQ, DTYPE)
-            self.np_zv = np.empty(NEQ, DTYPE)
-        else:
-            self.np_rv = np.empty(0, DTYPE)
-            self.np_zv = np.empty(0, DTYPE)
-
         self.jactimes = options["jactimes"]
-        if self.jactimes is not None:
-            self.np_vv = np.empty(NEQ, DTYPE)
-            self.np_Jv = np.empty(NEQ, DTYPE)
-        else:
-            self.np_vv = np.empty(0, DTYPE)
-            self.np_Jv = np.empty(0, DTYPE)
-
-        constraints_idx = options["constraints_idx"]
-        constraints_type = options["constraints_type"]
-        if constraints_idx is not None:
-
-            self.is_constrained = True
-            self.np_cc = np.zeros(NEQ, INT_TYPE)
-            for idx, val in zip(constraints_idx, constraints_type):
-                self.np_cc[idx] = val
-
-        else:
-            self.is_constrained = False
-            self.np_cc = np.zeros(0, INT_TYPE)
 
 
 cdef class _cvLSSparseDQJac:
@@ -333,7 +296,7 @@ cdef class _cvLSSparseDQJac:
     used to carry around the output.
 
     """
-    cdef void* mem
+    cdef N_Vector constraints
     cdef AuxData aux
     cdef object groups      # dict[int, np.ndarray[int]]
 
@@ -362,13 +325,13 @@ cdef class _cvLSSparseDQJac:
         cdef sunrealtype uround, srur
         cdef sunindextype j, k, start, end
         cdef np.ndarray[INT_TYPE_t, ndim=1] cols, indices
-        cdef np.ndarray[DTYPE_t, ndim=1] diff, inc, inc_inv, ytemp, yptemp
+        cdef np.ndarray[DTYPE_t, ndim=1] diff, inc, inc_inv, conj, y_tmp, yp_tmp
         
         aux = <AuxData> self.aux
         sparsity = aux.sparsity
 
-        ytemp = y.copy()
-        yptemp = yp.copy()
+        y_tmp = y.copy()
+        yp_tmp = yp.copy()
 
         uround = np.finfo(DTYPE).eps
         srur = np.sqrt(uround)
@@ -376,8 +339,8 @@ cdef class _cvLSSparseDQJac:
         sign = (y >= 0).astype(float) * 2 - 1
         inc = srur * sign * np.maximum(srur, np.abs(y))
 
-        if aux.is_constrained:
-            conj = aux.np_cc
+        if self.constraints is not NULL:
+            conj = svec2np(self.constraints)
 
             mask1 = np.abs(conj) == 1
             flip1 = ((y + inc) * conj < 0)
@@ -393,14 +356,14 @@ cdef class _cvLSSparseDQJac:
         for k in range(ngroups):
             cols = self.groups[k]
 
-            ytemp[cols] += inc[cols]
+            y_tmp[cols] += inc[cols]
           
             if aux.with_userdata:
-                _ = aux.rhsfn(t, ytemp, yptemp, aux.userdata)
+                _ = aux.rhsfn(t, y_tmp, yp_tmp, aux.userdata)
             else:
-                _ = aux.rhsfn(t, ytemp, yptemp)
+                _ = aux.rhsfn(t, y_tmp, yp_tmp)
 
-            diff = yptemp - yp
+            diff = yp_tmp - yp
             
             for j in cols:
                 start = sparsity.indptr[j]
@@ -412,18 +375,18 @@ cdef class _cvLSSparseDQJac:
                 elif JJ.ndim == 2:
                     JJ[indices, j] = inc_inv[j]*diff[indices]
                 
-            ytemp[cols] = y[cols]
+            y_tmp[cols] = y[cols]
 
-    cdef _setup_memory(self, void* mem):
+    cdef _setup_constraints(self, N_Vector constraints):
         """
-        Store mem for access to current step size. Cannot be a part of cinit
-        because void* types cannot be passed in from Python. 
-        
+        Share the CVODE constraints N_Vector, if any. Cannot be part of cinit
+        because N_Vector is a C pointer type that can't be passed from Python.
+
         """
-        self.mem = mem
+        self.constraints = constraints
 
     def __dealloc__(self):
-        self.mem = NULL
+        self.constraints = NULL
 
 
 class CVODEResult(RichResult):
@@ -545,6 +508,8 @@ cdef class CVODE:
             raise MemoryError("SUNLinSol constructor returned NULL.")
 
     cdef _set_tolerances(self):
+        cdef np.ndarray[DTYPE_t, ndim=1] atol_tmp
+
         rtol = self._options["rtol"]
         atol = self._options["atol"]
 
@@ -556,8 +521,10 @@ cdef class CVODE:
                 raise ValueError(f"'atol' length ({atol.size}) differs from"
                                  f" problem size ({self.NEQ}).")
 
+            # set atol via shared-mem np array
             self.atol = N_VNew_Serial(atol.size, self.ctx)
-            np2svec(atol, self.atol)
+            atol_tmp = svec2np(self.atol, writable=True)
+            atol_tmp[:] = atol
 
             flag = CVodeSVtolerances(self.mem, rtol, self.atol)
 
@@ -609,6 +576,7 @@ cdef class CVODE:
 
         cdef int flag
         cdef np.ndarray np_eventsdir
+        cdef np.ndarray[DTYPE_t, ndim=1] y0_tmp, constraints_tmp
 
         # 1) Initialize parallel environment (skip, only use serial here)
 
@@ -627,7 +595,9 @@ cdef class CVODE:
         if self.yy is NULL:
             raise MemoryError("N_VNew_Serial returned a NULL pointer for yy.")
         
-        np2svec(y0.copy(), self.yy)
+        # set y0 via shared-mem np array
+        y0_tmp = svec2np(self.yy, writable=True)
+        y0_tmp[:] = y0
 
         # 5) Create CVODE object
         if self._options["method"].lower() == "adams":
@@ -662,12 +632,11 @@ cdef class CVODE:
             raise RuntimeError("CVodeSetLinearSolver - " + LSMESSAGES[flag])
 
         # 11) Set linear solver optional inputs
-        if self.aux.jacfn is None and self.aux.sparsity is not None:
+        spjac = None
+        if (self.aux.jacfn is None) and (self.aux.sparsity is not None):
             spjac = _cvLSSparseDQJac(self.aux)  # setup/store jacfn in AuxData
-            spjac._setup_memory(self.mem)  # pass mem to access time step info
-
             self.aux.jacfn = spjac  # assign spjac as jacfn for use in wrapper
-            
+
         if self.aux.jacfn:
             flag = CVodeSetJacFn(self.mem, _jacfn_wrapper)
             if flag < 0:
@@ -758,16 +727,20 @@ cdef class CVODE:
         constraints_type = self._options["constraints_type"]
         if constraints_idx is not None:
 
-            np_constraints = np.zeros(self.NEQ, DTYPE)
-            for idx, val in zip(constraints_idx, constraints_type):
-                np_constraints[idx] = val
-
+            # set constraints via shared-mem np array
             self.constraints = N_VNew_Serial(self.NEQ, self.ctx)
-            np2svec(np_constraints, self.constraints)
+            constraints_tmp = svec2np(self.constraints, writable=True)
+
+            for idx, val in zip(constraints_idx, constraints_type):
+                constraints_tmp[idx] = val
 
             flag = CVodeSetConstraints(self.mem, self.constraints)
             if flag < 0:
                 raise RuntimeError("CVodeSetConstraints - " + CVMESSAGES[flag])
+
+        if spjac is not None:
+            # share constraints N_Vector, if any (NULL otherwise, unused)
+            spjac._setup_constraints(self.constraints)
 
         self._size = self.NEQ
         self._malloc = True
@@ -776,8 +749,7 @@ cdef class CVODE:
 
     cdef _init_step(self, sunrealtype t0, np.ndarray[DTYPE_t, ndim=1] y0):
         cdef int flag
-
-        yy_tmp = y0.copy()
+        cdef np.ndarray[DTYPE_t, ndim=1] yy_tmp
 
         # Memory allocation and settings steps handled in _setup()... only runs
         # on first call, or if the size of the system changes.
@@ -790,7 +762,8 @@ cdef class CVODE:
             flag = self._setup(t0, y0)
 
         else:
-            np2svec(yy_tmp, self.yy)
+            yy_tmp = svec2np(self.yy, writable=True)
+            yy_tmp[:] = y0
             
             flag = CVodeReInit(self.mem, t0, self.yy)
             if flag < 0:
@@ -798,8 +771,8 @@ cdef class CVODE:
 
         self._initialized = True
 
-        # Construct result instance to return
-        svec2np(self.yy, yy_tmp)
+        # Construct result instance to return, using shared-mem np array
+        yy_tmp = svec2np(self.yy)
 
         nfev, njev = _collect_stats(self.mem)
 
@@ -814,6 +787,7 @@ cdef class CVODE:
     cdef _step(self, sunrealtype tt, object method, object tstop):
         cdef int itask
         cdef sunrealtype tout
+        cdef np.ndarray[DTYPE_t, ndim=1] yy_tmp
 
         # Setup step type:
         if method == "normal":  # output solution at tt
@@ -825,8 +799,6 @@ cdef class CVODE:
             flag = CVodeSetStopTime(self.mem, <sunrealtype> tstop)
             if flag < 0:
                 raise RuntimeError("CVodeSetStopTime - " + CVMESSAGES[flag])
-
-        yy_tmp = self.aux.np_yy
         
         # 17) Advance solution in time
         flag = CVode(self.mem, tt, self.yy, &tout, itask)
@@ -834,7 +806,7 @@ cdef class CVODE:
         if PyErr_Occurred():
             _pyerr_handler()
 
-        svec2np(self.yy, yy_tmp)
+        yy_tmp = svec2np(self.yy)
 
         if flag == CV_ROOT_RETURN:
             _ = _handle_events(self.mem, self.aux, tout, yy_tmp)
@@ -869,6 +841,8 @@ cdef class CVODE:
         cdef int stop
         cdef sunrealtype tt
         cdef sunrealtype tend
+        cdef np.ndarray[DTYPE_t, ndim=1] yy_tmp
+        cdef np.ndarray[DTYPE_t, ndim=2] yy_out
 
         _ = self._init_step(tspan[0], y0)
 
@@ -876,10 +850,8 @@ cdef class CVODE:
         tt_out = np.empty(tspan.size, DTYPE)
         yy_out = np.empty((tspan.size, self.NEQ), DTYPE)
 
-        yy_tmp = self.aux.np_yy
-
         tt_out[0] = tspan[0]
-        svec2np(self.yy, yy_out[0, :])
+        yy_out[0, :] = svec2np(self.yy)
 
         # 17) Advance solution in time
         stop = 0
@@ -897,7 +869,7 @@ cdef class CVODE:
             if PyErr_Occurred():
                 _pyerr_handler()
 
-            svec2np(self.yy, yy_tmp)
+            yy_tmp = svec2np(self.yy)
 
             if flag == CV_ROOT_RETURN:
                 stop = _handle_events(self.mem, self.aux, tt, yy_tmp)
@@ -949,6 +921,8 @@ cdef class CVODE:
         cdef int stop
         cdef sunrealtype tt
         cdef sunrealtype tend
+        cdef np.ndarray[DTYPE_t, ndim=1] yy_tmp
+        cdef np.ndarray[DTYPE_t, ndim=2] yy_out
 
         _ = self._init_step(tspan[0], y0)
 
@@ -961,10 +935,8 @@ cdef class CVODE:
         extra_t = np.empty(500, DTYPE)
         extra_y = np.empty((500, self.NEQ), DTYPE)
 
-        yy_tmp = self.aux.np_yy
-
         tt_out[0] = tspan[0]
-        svec2np(self.yy, yy_out[0, :])
+        yy_out[0, :] = svec2np(self.yy)
 
         tend = tspan[-1]
         stop = 0
@@ -981,7 +953,7 @@ cdef class CVODE:
             if PyErr_Occurred():
                 _pyerr_handler()
 
-            svec2np(self.yy, yy_tmp)
+            yy_tmp = svec2np(self.yy)
 
             if flag == CV_ROOT_RETURN:
                 stop = _handle_events(self.mem, self.aux, tt, yy_tmp)

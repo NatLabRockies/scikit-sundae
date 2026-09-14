@@ -70,6 +70,12 @@ class CVODEPrecond:
         the solve whether the Jacobian data has been updated (`jnew[0] = 1`)
         or not (`jnew[0] = 0`). An outlined example is given below.
 
+        Aside from the output array `zvec` and the mutable `jnew` variable, all
+        other input arguments are considered read-only. Attempting to modify a
+        read-only array (e.g., `y` or `yp`) will raise a `ValueError` upon use
+        by the SUNDIALS solvers. If you need to modify any of these arrays, you
+        should create a copy of the array and modify the copy instead.
+
         .. code-block:: python
 
             def psetupfn(t, y, yp, jok, jnew, gamma, userdata):

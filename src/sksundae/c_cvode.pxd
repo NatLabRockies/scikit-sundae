@@ -1,5 +1,3 @@
-# c_cvode.pxd
-
 from .c_sundials cimport *  # Access to types
 
 # cvode.h

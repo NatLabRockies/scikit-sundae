@@ -96,8 +96,8 @@ tests = [
     "pytest-xdist",
 ]
 dev = [
-    "nox",
     "ruff",
+    "nox[uv]",
     "codespell",
     "genbadge[all]",
     "scikit-sundae[docs,tests]",

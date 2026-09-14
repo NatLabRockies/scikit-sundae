@@ -1,5 +1,3 @@
-# c_sunmatrix.pxd
-
 from .c_sundials cimport *  # Access to types
 
 # sunmatrix_dense.h

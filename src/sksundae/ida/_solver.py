@@ -154,6 +154,16 @@ class IDA:
         than overwriting it. For example, using `res[:] = F(t, y, yp)` is
         correct whereas `res = F(t, y, yp)` is not.
 
+        All arrays in user-defined functions share memory with SUNDIALS arrays
+        for memory efficiency, but only the designated output array for a given
+        function is writable (e.g., `res` in 'resfn', `events` in 'eventsfn',
+        `JJ` in 'jacfn', `zvec` in a preconditioner solve, `Jv` in a Jacobian-
+        vector solve). Every other array is read-only, including `y` and `yp`
+        in all functions and `res` itself when it appears as an input elsewhere
+        (e.g., 'jacfn', 'precond', 'jactimes'). Attempting to write to a
+        read-only array raises a `ValueError`. If you need a modifiable copy,
+        copy the array explicitly rather than writing in place.
+
         When any user-defined function requires data outside of their normal
         arguments, you can supply optional 'userdata'. When given, 'userdata'
         must appear in ALL function signatures ('rhsfn', 'eventsfn', 'jacfn',

@@ -130,12 +130,13 @@ def test_cvode_sparsity(linsolver):  # using cvLSSparseDQJac for dense/band
     npt.assert_allclose(soln.y, ode_soln(soln.t, y0))
 
 
-def test_cvode_constraints():
+@pytest.mark.parametrize('sparsity', [None, np.array([[0, 0], [0, 1]])])
+def test_cvode_constraints(sparsity):
     y0 = np.array([1, 2])
 
     # cannot satisfy constraints
     solver = CVODE(ode, rtol=1e-9, atol=1e-12, constraints_idx=[0, 1],
-                   constraints_type=[-2, -2])
+                   constraints_type=[-2, -2], sparsity=sparsity)
 
     _ = solver.init_step(0, y0)
     soln = solver.step(10)
@@ -143,7 +144,7 @@ def test_cvode_constraints():
 
     # can satisfy constraints
     solver = CVODE(ode, rtol=1e-9, atol=1e-12, constraints_idx=[0, 1],
-                   constraints_type=[2, 2])
+                   constraints_type=[2, 2], sparsity=sparsity)
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0)
@@ -282,6 +283,49 @@ def test_failures_on_exceptions():
 
     tspan = np.linspace(0, 10, 11)
     with pytest.raises(ValueError, match='propagated exception'):
+        _ = solver.solve(tspan, y0)
+
+
+def test_readonly_arrays():
+    y0 = np.array([1, 2])
+    tspan = np.linspace(0, 10, 11)
+
+    # y is read-only in rhsfn
+    def bad_rhsfn(t, y, yp):
+        y[0] = 0.0
+        yp[0] = 0.1
+        yp[1] = y[1]
+
+    solver = CVODE(bad_rhsfn, rtol=1e-9, atol=1e-12)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
+    # y is read-only in eventsfn
+    def bad_eventsfn(t, y, events):
+        y[0] = 0.0
+        events[0] = y[0] - 1.55
+
+    solver = CVODE(ode, rtol=1e-9, atol=1e-12, eventsfn=bad_eventsfn,
+                   num_events=1)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
+    # y is read-only in jacfn
+    def bad_jacfn_y(t, y, yp, JJ):
+        y[0] = 0.0
+        JJ[1, 1] = 1
+
+    solver = CVODE(ode, rtol=1e-9, atol=1e-12, jacfn=bad_jacfn_y)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0)
+
+    # yp is read-only in jacfn
+    def bad_jacfn_yp(t, y, yp, JJ):
+        yp[0] = 0.0
+        JJ[1, 1] = 1
+
+    solver = CVODE(ode, rtol=1e-9, atol=1e-12, jacfn=bad_jacfn_yp)
+    with pytest.raises(ValueError, match='read-only'):
         _ = solver.solve(tspan, y0)
 
 

@@ -1,5 +1,3 @@
-# c_ida.pxd
-
 from .c_sundials cimport *
 
 # ida.h

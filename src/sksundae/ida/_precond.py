@@ -58,6 +58,12 @@ class IDAPrecond:
         refer to the `SUNDIALS documentation`_ for more information about these
         functions and their input arguments.
 
+        Aside from the output array in the solve function (i.e., `zvec`), all
+        other input arguments are considered read-only. Attempting to modify a
+        read-only array (e.g., `y` or `yp`) will raise a `ValueError` upon use
+        by the SUNDIALS solvers. If you need to modify any of these arrays, you
+        should create a copy of the array and modify the copy instead.
+
         .. _SUNDIALS documentation: https://sundials.readthedocs.io/en/v6.1.1/ \
             ida/Usage/index.html#preconditioner-setup-iterative-linear-solvers
 

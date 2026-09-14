@@ -147,6 +147,16 @@ class CVODE:
         than overwriting it. For example, using `yp[:] = f(t, y)` is correct
         whereas `yp = f(t, y)` is not.
 
+        All arrays in user-defined functions share memory with SUNDIALS arrays
+        for memory efficiency, but only the designated output array for a given
+        function is writable (e.g., `yp` in 'rhsfn', `events` in 'eventsfn',
+        `JJ` in 'jacfn', `zvec` in a preconditioner solve, `Jv` in a Jacobian-
+        vector solve). Every other array is read-only, including `y` in all
+        functions and `yp` itself when it appears as an input elsewhere (e.g.,
+        'jacfn', 'precond', 'jactimes'). Attempting to write to a read-only
+        array raises a `ValueError`. If you need a modifiable copy, copy the
+        array explicitly rather than writing in place.
+
         When any user-defined function requires data outside of their normal
         arguments, you can supply optional 'userdata'. When given, 'userdata'
         must appear in ALL function signatures ('rhsfn', 'eventsfn', 'jacfn',

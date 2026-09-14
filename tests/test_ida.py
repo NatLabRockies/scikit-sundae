@@ -196,13 +196,15 @@ def test_ida_sparsity(linsolver):  # using idaLSSparseDQJac for dense/band
     npt.assert_allclose(soln.y, dae_soln(soln.t, y0))
 
 
-def test_ida_constraints():
+@pytest.mark.parametrize('sparsity', [None, np.array([[1, 0], [1, 1]])])
+def test_ida_constraints(sparsity):
     y0 = np.array([1, 2])
     yp0 = np.array([0.1, 0.2])
 
     # cannot satisfy constraints
     solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
-                 constraints_idx=[0, 1], constraints_type=[-2, -2])
+                 constraints_idx=[0, 1], constraints_type=[-2, -2],
+                 sparsity=sparsity)
 
     _ = solver.init_step(0, y0, yp0)
     soln = solver.step(10)
@@ -210,7 +212,8 @@ def test_ida_constraints():
 
     # can satisfy constraints
     solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
-                 constraints_idx=[0, 1], constraints_type=[2, 2])
+                 constraints_idx=[0, 1], constraints_type=[2, 2],
+                 sparsity=sparsity)
 
     tspan = np.linspace(0, 10, 11)
     soln = solver.solve(tspan, y0, yp0)
@@ -389,6 +392,82 @@ def test_failures_on_exceptions():
 
     tspan = np.linspace(0, 10, 11)
     with pytest.raises(ValueError, match='propagated exception'):
+        _ = solver.solve(tspan, y0, yp0)
+
+
+def test_readonly_arrays():
+    y0 = np.array([1, 2])
+    yp0 = np.array([0.1, 0.2])
+    tspan = np.linspace(0, 10, 11)
+
+    # y is read-only in resfn
+    def bad_resfn_y(t, y, yp, res):
+        y[0] = 0.0
+        res[0] = yp[0] - 0.1
+        res[1] = 2*y[0] - y[1]
+
+    solver = IDA(bad_resfn_y, rtol=1e-9, atol=1e-12, algebraic_idx=[1])
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    # yp is read-only in resfn
+    def bad_resfn_yp(t, y, yp, res):
+        yp[0] = 0.0
+        res[0] = yp[0] - 0.1
+        res[1] = 2*y[0] - y[1]
+
+    solver = IDA(bad_resfn_yp, rtol=1e-9, atol=1e-12, algebraic_idx=[1])
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    # y is read-only in eventsfn
+    def bad_eventsfn_y(t, y, yp, events):
+        y[0] = 0.0
+        events[0] = y[0] - 1.55
+
+    solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
+                 eventsfn=bad_eventsfn_y, num_events=1)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    # yp is read-only in eventsfn
+    def bad_eventsfn_yp(t, y, yp, events):
+        yp[0] = 0.0
+        events[0] = y[0] - 1.55
+
+    solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
+                 eventsfn=bad_eventsfn_yp, num_events=1)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    # y is read-only in jacfn
+    def bad_jacfn_y(t, y, yp, res, cj, JJ):
+        y[0] = 0.0
+        JJ[1, 1] = 1
+
+    solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
+                 jacfn=bad_jacfn_y)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    # yp is read-only in jacfn
+    def bad_jacfn_yp(t, y, yp, res, cj, JJ):
+        yp[0] = 0.0
+        JJ[1, 1] = 1
+
+    solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
+                 jacfn=bad_jacfn_yp)
+    with pytest.raises(ValueError, match='read-only'):
+        _ = solver.solve(tspan, y0, yp0)
+
+    # res is read-only in jacfn
+    def bad_jacfn_res(t, y, yp, res, cj, JJ):
+        res[0] = 0.0
+        JJ[1, 1] = 1
+
+    solver = IDA(dae, rtol=1e-9, atol=1e-12, algebraic_idx=[1],
+                 jacfn=bad_jacfn_res)
+    with pytest.raises(ValueError, match='read-only'):
         _ = solver.solve(tspan, y0, yp0)
 
 
