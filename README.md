@@ -33,13 +33,15 @@ You are now ready to start solving. Run one of the following examples to check y
 
 ```python
 # Use the CVODE integrator to solve the Van der Pol equation
+import matplotlib.pyplot as plt
 
 from sksundae.cvode import CVODE
-import matplotlib.pyplot as plt
+
 
 def rhsfn(t, y, yp):
     yp[0] = y[1]
     yp[1] = 1000*(1 - y[0]**2)*y[1] - y[0]
+
 
 solver = CVODE(rhsfn)
 soln = solver.solve([0, 3000], [2, 0])
@@ -48,25 +50,36 @@ plt.plot(soln.t, soln.y[:, 0])
 plt.show()
 ```
 
-The `CVODE` solver demonstrated above is only capable of solving pure ODEs. The constant parameters and time span used above match an example given by [MATLAB](https://www.mathworks.com/help/matlab/ref/ode15s.html) for easy comparison. If you are trying to solve a DAE, you will want to use the `IDA` solver instead. A minimal DAE example is given below for the Robertson problem. As with the CVODE example, the parameters below are chosen to match an online [MATLAB](https://www.mathworks.com/help/matlab/ref/ode15s.html) example for easy comparison.
+The `CVODE` solver demonstrated above is only capable of solving pure ODEs. The constant parameters and time span used above match an example given by [MATLAB](https://www.mathworks.com/help/matlab/ref/ode15s.html) for easy comparison. If you are trying to solve a DAE, you will want to use the `IDA` solver instead. A minimal DAE example is given below for the Robertson problem. As with the CVODE example, the parameters and options below are chosen to match an online [MATLAB](https://www.mathworks.com/help/matlab/ref/ode15s.html) example for easy comparison.
 
 ```python
 # Use the IDA integrator to solve the Robertson problem
+import numpy as np
+import matplotlib.pyplot as plt
 
 from sksundae.ida import IDA
-import matplotlib.pyplot as plt
+
 
 def resfn(t, y, yp, res):
     res[0] = yp[0] + 0.04*y[0] - 1e4*y[1]*y[2]
     res[1] = yp[1] - 0.04*y[0] + 1e4*y[1]*y[2] + 3e7*y[1]**2
     res[2] = y[0] + y[1] + y[2] - 1
 
-solver = IDA(resfn, algebraic_idx=[2], calc_initcond='yp0')
-soln = solver.solve([4e-6, 4e6], [1, 0, 0], [0, 0, 0])
+
+solver = IDA(
+    resfn,
+    algebraic_idx=[2],
+    calc_initcond='yp0',
+    rtol=1e-4,
+    atol=[1e-6, 1e-10, 1e-6],
+)
+
+tspan = np.hstack([0.0, 4.0 * np.logspace(-6, 6)])
+soln = solver.solve(tspan, [1, 0, 0], [0, 0, 0])
 
 soln.y[:, 1] *= 1e4  # scale y1 so it is visible in the figure
 
-plt.plot(soln.t, soln.y)
+plt.semilogx(soln.t, soln.y)
 plt.legend(['y0', 'y1', 'y2'])
 plt.show()
 ```
