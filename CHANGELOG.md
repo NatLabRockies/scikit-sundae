@@ -31,6 +31,7 @@ None.
 - Remove numpy buffers in favor of no-copy shared-memory `svec2np` functionality ([#58](https://github.com/NatLabRockies/scikit-sundae/pull/58))
 
 ### Bug Fixes
+- Normalize exceptions before raising in `_pyerr_handler` to resolve `cibuildwheel` test issues ([#60](https://github.com/NatLabRockies/scikit-sundae/pull/60))
 - Namespace overlap for `TimeoutError` fixed by rename to `TimeoutExpiredError` ([#57](https://github.com/NatLabRockies/scikit-sundae/pull/57))
 - Address memory leak with raised exceptions caused by persisting solver/data objects ([#51](https://github.com/NatLabRockies/scikit-sundae/pull/51))
 - Fixes issue where `jacfn` is ignored when using `sparse` linear solver ([#48](https://github.com/NatLabRockies/scikit-sundae/pull/48))
