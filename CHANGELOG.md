@@ -24,6 +24,7 @@
 - Drop support for Python 3.10, reaches end of life in October 2026 ([#57](https://github.com/NatLabRockies/scikit-sundae/pull/57))
 
 ### Chores
+- Update workflows to use Python 3.15 as newest to prep for v1.2.0 release ([#59](https://github.com/NatLabRockies/scikit-sundae/pull/59))
 - Fix typos in solver docstrings, use global coverage ignores in `pyproject.toml` ([#55](https://github.com/NatLabRockies/scikit-sundae/pull/55))
 - Move to using `ruff` for linting and start tracking `Cython` addition issue ([#45](https://github.com/NatLabRockies/scikit-sundae/pull/45))
 - Make GitHub hyperlinks reference new org name `NREL` -> `NatLabRockies` ([#42](https://github.com/NatLabRockies/scikit-sundae/pull/42))

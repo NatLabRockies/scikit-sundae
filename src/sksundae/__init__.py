@@ -54,12 +54,12 @@ distributed as well (e.g., SuperLU_MT, OpenBLAS, and LAPACK).
 """
 
 from . import ida
-from . import utils
 from . import cvode
+from . import utils
 from . import jacband
 
 from ._cy_common import SUNDIALS_VERSION
 
-__all__ = ['ida', 'utils', 'cvode', 'jacband', 'SUNDIALS_VERSION']
+__all__ = ['ida', 'cvode', 'utils', 'jacband', 'SUNDIALS_VERSION']
 
-__version__ = '1.2.0.dev0'
+__version__ = '1.3.0.dev0'
