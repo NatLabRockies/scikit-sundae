@@ -1,15 +1,14 @@
-# .readthedocs.yaml
-# Read the Docs configuration file
-# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+# Read the Docs configuration file, options at link below
+# https://docs.readthedocs.io/en/stable/config-file/v2.html
 
 # Required
 version: 2
 
 # Set OS, Python version, and other tools for the build
 build:
-  os: ubuntu-22.04
+  os: ubuntu-lts-latest
   tools:
-    python: miniconda-latest
+    python: miniforge3-latest
   jobs:
     post_create_environment:
       - conda info
