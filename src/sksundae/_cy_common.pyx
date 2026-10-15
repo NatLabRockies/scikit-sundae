@@ -3,7 +3,8 @@ import numpy as np
 cimport numpy as np
 
 from cpython.exc cimport (
-    PyObject, PyErr_Occurred, PyErr_Fetch, PyErr_Restore, 
+    PyObject, PyErr_Occurred,
+    PyErr_Fetch, PyErr_Restore, PyErr_NormalizeException
     # PyErr_GetRaisedException, PyErr_SetRaisedException,
 )
 
@@ -46,11 +47,12 @@ elif SUNDIALS_INT_TYPE == "long int":
 
 cdef _pyerr_handler():
     """Catch and re-raise Python exceptions in Cython code."""
-    cdef PyObject *errtype
-    cdef PyObject *errvalue
-    cdef PyObject *errtraceback
+    cdef PyObject *errtype = NULL
+    cdef PyObject *errvalue = NULL
+    cdef PyObject *errtraceback = NULL
 
     PyErr_Fetch(&errtype, &errvalue, &errtraceback)
+    PyErr_NormalizeException(&errtype, &errvalue, &errtraceback)
     PyErr_Restore(errtype, errvalue, errtraceback)
 
     # Update to the following when support for Python <3.12 is dropped:

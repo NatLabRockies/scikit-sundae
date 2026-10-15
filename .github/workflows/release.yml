@@ -132,8 +132,8 @@ jobs:
           CIBW_ENVIRONMENT_LINUX: >-
             SUNDIALS_PREFIX="/root/.local/share/mamba/envs/sun"
             LD_LIBRARY_PATH="/root/.local/share/mamba/envs/sun/lib:$LD_LIBRARY_PATH"
-          # CIBW_TEST_REQUIRES: pytest pandas
-          # CIBW_TEST_COMMAND: pytest {project}/tests
+          CIBW_TEST_REQUIRES: pytest pandas
+          CIBW_TEST_COMMAND: pytest {project}/tests
 
       - name: List files in wheelhouse dir
         run: |
