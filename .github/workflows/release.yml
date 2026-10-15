@@ -110,7 +110,6 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
-          CIBW_BUILD: "cp311-* cp315-*"
           CIBW_SKIP: "cp3??t-* *-win32 *-manylinux_i686 *-musllinux_*"
           CIBW_ENVIRONMENT_WINDOWS: >-
             PATH="$CONDA_PREFIX/Library;$PATH"
