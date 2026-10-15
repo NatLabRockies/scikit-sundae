@@ -1,22 +1,5 @@
 # scikit-SUNDAE Changelog
 
-## [Unreleased](https://github.com/NatLabRockies/scikit-sundae)
-
-### New Features
-None.
-
-### Optimizations
-None.
-
-## Bug Fixes
-None.
-
-### Breaking Changes
-None.
-
-### Chores
-None.
-
 ## [v1.2.0](https://github.com/NatLabRockies/scikit-sundae/tree/v1.2.0)
 
 ### New Features
