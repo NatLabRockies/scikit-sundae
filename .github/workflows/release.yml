@@ -1,89 +1,87 @@
 name: release
 
 on:
-  workflow_dispatch:
-  # push:
-  #   tags:
-  #     - "v[0-9]+.[0-9]+.[0-9]+"
-  #     - "v[0-9]+.[0-9]+.[0-9]+a[0-9]+"
-  #     - "v[0-9]+.[0-9]+.[0-9]+b[0-9]+"
-  #     - "v[0-9]+.[0-9]+.[0-9]+rc[0-9]+"
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+a[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+b[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+rc[0-9]+"
 
 jobs:
-  # details:
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     tag_version: ${{ steps.tag.outputs.tag_version }}
-  #     local_version: ${{ steps.local.outputs.local_version }}
+  details:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_version: ${{ steps.tag.outputs.tag_version }}
+      local_version: ${{ steps.local.outputs.local_version }}
 
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v6
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
 
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v6
-  #       with:
-  #         python-version: "3.15"
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.15"
 
-  #     - name: Extract tag version details
-  #       id: tag
-  #       run: |
-  #         if [[ "${{ github.ref_type }}" = "tag" ]]; then
-  #           TAG_VERSION=${GITHUB_REF#refs/tags/v}
-  #           echo "tag_version=$TAG_VERSION" >> "$GITHUB_OUTPUT"
-  #           echo "Tag version is $TAG_VERSION"
-  #         else
-  #           echo "No tag found"
-  #           exit 1
-  #         fi
+      - name: Extract tag version details
+        id: tag
+        run: |
+          if [[ "${{ github.ref_type }}" = "tag" ]]; then
+            TAG_VERSION=${GITHUB_REF#refs/tags/v}
+            echo "tag_version=$TAG_VERSION" >> "$GITHUB_OUTPUT"
+            echo "Tag version is $TAG_VERSION"
+          else
+            echo "No tag found"
+            exit 1
+          fi
 
-  #     - name: Extract local package version
-  #       id: local
-  #       env:  # Don't let extensions compile, just grab version
-  #         BUILD_SDIST: 1  
-  #       run: |
-  #         python -m pip install --upgrade pip
-  #         pip install --upgrade setuptools numpy cython
+      - name: Extract local package version
+        id: local
+        env:  # Don't let extensions compile, just grab version
+          BUILD_SDIST: 1  
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade setuptools numpy cython
 
-  #         LOCAL_VERSION=$(python setup.py --version)
+          LOCAL_VERSION=$(python setup.py --version)
 
-  #         echo "local_version=$LOCAL_VERSION" >> "$GITHUB_OUTPUT"
-  #         echo "Local version is $LOCAL_VERSION"
+          echo "local_version=$LOCAL_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Local version is $LOCAL_VERSION"
 
 
-  # check-version:
-  #   needs: details
-  #   runs-on: ubuntu-latest
+  check-version:
+    needs: details
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v6
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
 
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v6
-  #       with:
-  #         python-version: "3.15"
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.15"
 
-  #     - name: Check version details against PyPI, tag, etc.
-  #       run: |
-  #         TAG_VERSION=${{ needs.details.outputs.tag_version }}
-  #         LOCAL_VERSION=${{ needs.details.outputs.local_version }}
+      - name: Check version details against PyPI, tag, etc.
+        run: |
+          TAG_VERSION=${{ needs.details.outputs.tag_version }}
+          LOCAL_VERSION=${{ needs.details.outputs.local_version }}
 
-  #         cd scripts
+          cd scripts
 
-  #         pip install requests packaging
-  #         python version_checker.py --tag="$TAG_VERSION" --local="$LOCAL_VERSION"
+          pip install requests packaging
+          python version_checker.py --tag="$TAG_VERSION" --local="$LOCAL_VERSION"
 
   build-wheels:
     name: (wheels, ${{ matrix.os }})
-    # needs: [details, check-version]
+    needs: [details, check-version]
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: true
       matrix:
-        os: [windows-latest]
-        # os: [ubuntu-latest, macos-15-intel, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-15-intel, macos-latest, windows-latest]
 
     defaults:
       run:
@@ -149,86 +147,86 @@ jobs:
           name: dist-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: wheelhouse/*.whl
 
-  # build-sdist:
-  #   name: (sdist, ${{ matrix.os }})
-  #   needs: [details, check-version]
-  #   runs-on: ${{ matrix.os }}
+  build-sdist:
+    name: (sdist, ${{ matrix.os }})
+    needs: [details, check-version]
+    runs-on: ${{ matrix.os }}
 
-  #   strategy:
-  #     fail-fast: true
-  #     matrix:
-  #       os: [ubuntu-latest]
-  #       python-version: ["3.15"]
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.15"]
 
-  #   defaults:
-  #     run:
-  #       shell: bash -el {0}
+    defaults:
+      run:
+        shell: bash -el {0}
 
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v6
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
 
-  #     - name: Setup Python and SUNDIALS
-  #       uses: mamba-org/setup-micromamba@v3
-  #       with:  # ci_environment.yml specifies sundials version to compile
-  #         environment-file: environments/ci_environment.yml
-  #         create-args: python=${{ matrix.python-version }}
+      - name: Setup Python and SUNDIALS
+        uses: mamba-org/setup-micromamba@v3
+        with:  # ci_environment.yml specifies sundials version to compile
+          environment-file: environments/ci_environment.yml
+          create-args: python=${{ matrix.python-version }}
 
-  #     - name: Install build
-  #       run: pip install build
+      - name: Install build
+        run: pip install build
 
-  #     - name: Build sdist
-  #       env:  # Don't compile extensions if just building sdist
-  #         BUILD_SDIST: 1
-  #       run: |
-  #         echo "BUILD_SDIST is set to: $BUILD_SDIST"
-  #         python -m build --sdist
+      - name: Build sdist
+        env:  # Don't compile extensions if just building sdist
+          BUILD_SDIST: 1
+        run: |
+          echo "BUILD_SDIST is set to: $BUILD_SDIST"
+          python -m build --sdist
           
-  #     - name: Test source installation
-  #       env:  # Make sure extensions compile during actual install
-  #         BUILD_SDIST: 0
-  #       run: |
-  #         echo "BUILD_SDIST is set to: $BUILD_SDIST"
-  #         python -m pip install --upgrade pip
-  #         pip install dist/*.tar.gz -v
+      - name: Test source installation
+        env:  # Make sure extensions compile during actual install
+          BUILD_SDIST: 0
+        run: |
+          echo "BUILD_SDIST is set to: $BUILD_SDIST"
+          python -m pip install --upgrade pip
+          pip install dist/*.tar.gz -v
           
-  #         pip install pandas pytest
-  #         pytest ./tests
+          pip install pandas pytest
+          pytest ./tests
 
-  #     - name: Upload tarball
-  #       uses: actions/upload-artifact@v7
-  #       with:
-  #         name: dist-sdist
-  #         path: dist/*.tar.gz
+      - name: Upload tarball
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist-sdist
+          path: dist/*.tar.gz
 
-  # pypi-publish:
-  #   name: Upload to PyPI
-  #   needs: [build-wheels, build-sdist]
-  #   runs-on: ubuntu-latest
+  pypi-publish:
+    name: Upload to PyPI
+    needs: [build-wheels, build-sdist]
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: Download artifacts
-  #       uses: actions/download-artifact@v7
-  #       with:
-  #         path: dist/
-  #         pattern: dist-*
-  #         merge-multiple: true
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v7
+        with:
+          path: dist/
+          pattern: dist-*
+          merge-multiple: true
 
-  #     - name: Check files
-  #       run: ls dist
+      - name: Check files
+        run: ls dist
 
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v6
-  #       with:
-  #         python-version: "3.15"
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.15"
 
-  #     - name: Install twine
-  #       run: pip install twine
+      - name: Install twine
+        run: pip install twine
 
-  #     - name: Check builds and upload to PyPI
-  #       env:
-  #         TWINE_USERNAME: __token__
-  #         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-  #       run: |
-  #         twine check dist/*
-  #         twine upload dist/*
+      - name: Check builds and upload to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          twine check dist/*
+          twine upload dist/*
