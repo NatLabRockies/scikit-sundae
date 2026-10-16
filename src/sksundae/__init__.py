@@ -62,4 +62,4 @@ from ._cy_common import SUNDIALS_VERSION
 
 __all__ = ['ida', 'cvode', 'utils', 'jacband', 'SUNDIALS_VERSION']
 
-__version__ = '1.2.0rc1'
+__version__ = '1.2.0'
