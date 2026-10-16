@@ -15,7 +15,7 @@ None.
 None.
 
 ### Chores
-None.
+- Update `switcher.json` (latest dev and stable docs) for new `v1.2.0` release ([#61](https://github.com/NatLabRockies/scikit-sundae/pull/61))
 
 ## [v1.2.0](https://github.com/NatLabRockies/scikit-sundae/tree/v1.2.0)
 
